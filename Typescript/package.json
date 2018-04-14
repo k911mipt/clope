@@ -1,0 +1,13 @@
+{
+  "name": "clope-ts",
+  "version": "1.0.0",
+  "description": "Clope algorithm implementation with Mushroom dataset example. Written for Node.js",
+  "main": "index.js",
+  "scripts": {},
+  "author": "k911mipt",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^10.5.2"
+  }
+}

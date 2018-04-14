@@ -1,0 +1,11 @@
+{
+	"folders": [{
+		"path": "Typescript"
+	}],
+	"settings": {
+		"tslint.run": "onType",
+		"tslint.alwaysShowStatus": true,
+		"tslint.autoFixOnSave": true,
+		"tslint.enable": true
+	}
+}
