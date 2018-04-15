@@ -1,0 +1,4 @@
+ti pidor1
+ti pidor2
+ti pidor3
+ti pidor4
