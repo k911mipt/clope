@@ -149,7 +149,7 @@ class ClopePoCPromise {
 }
 
 function runClope() {
-    const fileDb = new FileDBHandler("bin/sample.txt", (line) => new Transaction(line));
+    const fileDb = new FileDBHandler("testdata/sample.txt", (line) => new Transaction(line));
 
     const clope = new ClopePoCPromise(fileDb)
         .startCPUClusterization(4)
