@@ -1,0 +1,1 @@
+Clope -d Mushroom_DataSet\agaricus-lepiota.data2 -r 0,21 -o 1.txt
