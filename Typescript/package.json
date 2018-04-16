@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "description": "TODO",
   "main": "index.js",
-  "scripts": {
-    
-  },
-  "author": "kimpty",
-  "license": "MIT",
+  "scripts": {},
+  "author": "k911mipt",
+  "license": "",
   "dependencies": {
     "@microsoft/ts-command-line": "^3.1.1",
     "@types/node": "^9.6.5",
