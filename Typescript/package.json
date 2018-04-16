@@ -8,7 +8,6 @@
   "license": "",
   "dependencies": {
     "@microsoft/ts-command-line": "^3.1.1",
-    "@types/node": "^9.6.5",
-    "commander": "^2.15.1"
+    "@types/node": "^9.6.5"
   }
 }

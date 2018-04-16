@@ -27,3 +27,7 @@ export interface ITransaction {
 export interface ICluster {
 
 }
+
+export interface IClopePoCPromise{
+    
+}
