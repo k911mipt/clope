@@ -1,5 +1,6 @@
-import FileDBHandler, { Transaction } from "./db/fileDBHandler";
+import FileDBHandler from "./db/fileDBHandler";
 import { ClopePromise } from "./clope/clope";
+import { Transaction } from "./db/Transaction";
 
 
 /*
@@ -33,7 +34,7 @@ import { ClopePromise } from "./clope/clope";
 */
 
 function runClope() {
-    const fileDb = new FileDBHandler("testdata/sample.txt", (line) => new Transaction(line));
+    const fileDb = new FileDBHandler("testdata/sample.txt", (line) => {new Transaction(line)});
 
     const clope = new ClopePromise(fileDb)
         .startCPUClusterization(4)

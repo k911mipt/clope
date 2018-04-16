@@ -1,4 +1,4 @@
-import { ITransaction } from './types';
+//import { ITransaction } from './types';
 export interface IDatabaseHandler {
     connect(): boolean;
     reset(): boolean;
@@ -6,28 +6,35 @@ export interface IDatabaseHandler {
 }
 
 export interface IAsyncDBHandler {
-   connect(): boolean;
-   reset(): boolean;
-   readLineEvent(action : (tr : ITransaction) => void): void 
-   closed(action : () => void) : void
+    connect(): boolean;
+    reset(): boolean;
+    readLineEvent(action: (tr: ITransaction) => void): void
+    closed(action: () => void): void
 }
 
 export interface IAsyncDBHandlerPromise {
     connect(): boolean;
     reset(): boolean;
-    readLineEvent(action : (tr : ITransaction) => void): void 
-    closed() : Promise<void>
- }
+    readLineEvent(action: (tr: ITransaction) => void): void
+    closed(): Promise<void>
+}
 
 
 export interface ITransaction {
-    value : String;
+    readonly elementKeys: Array<number>;
+    AddElementKey(idObject: number): void
+}
+
+export interface ITransactionElement {
+    Value: any;
+    NumberAttribute: number;
+    UniqueNumber: number;
 }
 
 export interface ICluster {
 
 }
 
-export interface IClopePoCPromise{
-    
+export interface IClopePoCPromise {
+
 }
