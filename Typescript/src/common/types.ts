@@ -1,22 +1,24 @@
 //import { ITransaction } from './types';
 export interface IDatabaseHandler {
-    connect(): boolean;
-    reset(): boolean;
-    readNextTransaction(): ITransaction
+    Connect(): boolean;
+    Reset(): boolean;
+    //ReadLineEvent(action: (tr: ITransaction) => void): void
+    ReadLineEvent(action: (objects: Array<any>) => void): void
+    Closed(): Promise<void>
 }
 
 export interface IAsyncDBHandler {
-    connect(): boolean;
-    reset(): boolean;
-    readLineEvent(action: (tr: ITransaction) => void): void
-    closed(action: () => void): void
+    Connect(): boolean;
+    Reset(): boolean;
+    ReadLineEvent(action: (objects: Array<any>) => void): void
+    Closed(): Promise<void>
 }
 
 export interface IAsyncDBHandlerPromise {
-    connect(): boolean;
-    reset(): boolean;
-    readLineEvent(action: (tr: ITransaction) => void): void
-    closed(): Promise<void>
+    Connect(): boolean;
+    Reset(): boolean;
+    ReadLineEvent(action: (tr: ITransaction) => void): void
+    Closed(): Promise<void>
 }
 
 

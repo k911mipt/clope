@@ -1,28 +1,35 @@
 import { resolve } from "path";
 import { ITransaction, IAsyncDBHandler, IAsyncDBHandlerPromise, IClopePoCPromise } from "../common/types";
+import { Dictionary } from "../common/Dictionary";
+import { TransactionElement } from "./Transaction";
 
 export class ClopePromise {
+    protected readonly UniqueObjects: Dictionary<TransactionElement, number>;
     numIteration: number;
     moved: boolean;
     asyncDB: IAsyncDBHandlerPromise;
 
+    public GetObjectsCount(): number {
+        return this.UniqueObjects.Count();
+    }
     constructor(asyncDB: IAsyncDBHandlerPromise) {
+        this.UniqueObjects = new Dictionary<TransactionElement, number>();
         this.asyncDB = asyncDB;
         this.numIteration = 0;
         this.moved = true;
     }
 
     runPhase1(): Promise<void> {
-        this.asyncDB.connect()
-        this.asyncDB.readLineEvent(this.phase1)
-        return this.asyncDB.closed()
+        this.asyncDB.Connect()
+        this.asyncDB.ReadLineEvent(this.phase1)
+        return this.asyncDB.Closed()
     }
 
     runPhase2(): Promise<void> {
-        this.asyncDB.reset();
-        this.asyncDB.readLineEvent(this.phase2.bind(this))
+        this.asyncDB.Reset();
+        this.asyncDB.ReadLineEvent(this.phase2.bind(this))
 
-        return this.asyncDB.closed().then(() => {
+        return this.asyncDB.Closed().then(() => {
             if (this.moved) {
                 this.runPhase2()
                 console.log("phase2")
@@ -73,12 +80,12 @@ class Clope {
     }
 
     private subPhase1() {
-        this.asyncDB.connect()
+        this.asyncDB.Connect()
         this.subscribe(this.phase1, this.phaseClose)
     }
 
     private subPhase2() {
-        this.asyncDB.reset()
+        this.asyncDB.Reset()
         this.subscribe(this.phase2, this.phase2Close)
     }
     private phase1(next: ITransaction) {
@@ -108,8 +115,8 @@ class Clope {
     }
 
     private subscribe(transactionHandler: (tr: ITransaction) => void, closeHandler: () => void): void {
-        this.asyncDB.readLineEvent(transactionHandler.bind(this))
-        this.asyncDB.closed(closeHandler.bind(this))
+        this.asyncDB.ReadLineEvent(transactionHandler.bind(this))
+        this.asyncDB.Closed(closeHandler.bind(this))
     }
 
 }

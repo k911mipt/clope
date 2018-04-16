@@ -16,23 +16,23 @@ export default class FileDBHandler implements IAsyncDBHandlerPromise {
         this.stream = fs.createReadStream(this.filePath);
     }
 
-    connect(): boolean {
+    Connect(): boolean {
         this.startReadNewFile();
         return true;
     }
 
-    reset(): boolean {
+    Reset(): boolean {
         this.startReadNewFile();
         return true;
     }
 
-    readLineEvent(action: (tr: ITransaction) => void): void {
+    ReadLineEvent(action: (tr: ITransaction) => void): void {
         if (this.fileLineReader == null) throw Error("file is not connected")
 
         this.fileLineReader.on('line', (line) => action(this.mapper(line)))
     }
 
-    closed(): Promise<void> {
+    Closed(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (this.fileLineReader == null) {
                 reject(Error("file is not connected"))
