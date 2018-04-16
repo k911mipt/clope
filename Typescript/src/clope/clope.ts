@@ -1,7 +1,7 @@
 import { resolve } from "path";
-import { ITransaction, IAsyncDBHandler, IAsyncDBHandlerPromise, IClopePoCPromise } from "./common/types";
+import { ITransaction, IAsyncDBHandler, IAsyncDBHandlerPromise, IClopePoCPromise } from "../common/types";
 
-export class ClopePoCPromise {
+export class ClopePromise {
     numIteration: number;
     moved: boolean;
     asyncDB: IAsyncDBHandlerPromise;
@@ -53,7 +53,7 @@ export class ClopePoCPromise {
 
 }
 
-class ClopePoC {
+class Clope {
     numIteration: number;
     moved: boolean;
     asyncDB: IAsyncDBHandler;
