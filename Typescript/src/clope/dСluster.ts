@@ -1,5 +1,7 @@
-import { ICluster } from "../common/types";
 import { Transaction } from "./Transaction";
+export interface ICluster {
+
+}
 
 class Cluster implements ICluster {
     private width: number;  //Ширина кластера

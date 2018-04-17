@@ -3,7 +3,6 @@ export interface IAsyncDataSource<TRow> {
     reset(): Promise<void>; // or boolean
     connect(): Promise<void>;
     readNext(myAction: (row: TRow) => void): void;
-    createMap(): Promise<void>;
 }
 
 export abstract class AsyncDataSource<TRow> implements IAsyncDataSource<TRow> {

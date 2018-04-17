@@ -30,10 +30,4 @@ export interface ITransactionElement {
 
 
 
-export interface ICluster {
 
-}
-
-export interface IClopePoCPromise {
-
-}

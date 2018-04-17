@@ -8,29 +8,26 @@ export interface IDataSourceMapper<T> {
 
 
 
-export class AsyncFileDataSource extends AsyncDataSource<string> {
+export class AsyncFileDataSource implements IAsyncDataSource<string> {
     isEnd: boolean;
     filePath: string;
 
     stream: fs.ReadStream;
     fileLineReader?: ReadLine.ReadLine;
 
-    mapper: IDataSourceMapper<string>;
-    constructor(filePath: string, mapper: IDataSourceMapper<string>) {
-        super();
+    //mapper: IDataSourceMapper<string>;
+    //constructor(filePath: string, mapper: IDataSourceMapper<string>) {
+    constructor(filePath: string) {
+        //super();
         this.isEnd = true;
-        this.mapper = mapper;
-
         this.filePath = filePath;
         this.stream = fs.createReadStream(this.filePath);
     }
-
 
     connect(): Promise<void> {
         this.fileLineReader = ReadLine.createInterface({
             input: fs.createReadStream(this.filePath),
         });
-        //throw new Error("Method not implemented.");
         return new Promise<void>((resolve) => resolve());
     }
     reset(): Promise<void> {
