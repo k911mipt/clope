@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { IAsyncDBHandler, IAsyncDBHandlerPromise, ITransaction } from "../common/types";
 
 import * as fs from "fs";
@@ -35,9 +36,9 @@ export default class FileDBHandler implements IAsyncDBHandlerPromise {
     Closed(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (this.fileLineReader == null) {
-                reject(Error("file is not connected"))
+                resolve(false)
             } else {
-                this.fileLineReader.on('close', resolve)
+                resolve(true)
             }
         })
     }

@@ -4,6 +4,9 @@ export class Transaction implements ITransaction {
     public readonly elementKeys: Array<number>;  //список id объектов
     public elementKeyCount: number; //Количество объектов
 
+    //public getElement(number)
+    public getElement = (num: number) => this.elementKeys[num];
+
     constructor(capacity: number) {
         this.elementKeys = new Array<number>(capacity);
         this.elementKeyCount = 0;

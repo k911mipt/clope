@@ -33,6 +33,8 @@ export interface ITransactionElement {
     UniqueNumber: number;
 }
 
+
+
 export interface ICluster {
 
 }

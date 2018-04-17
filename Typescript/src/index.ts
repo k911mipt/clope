@@ -1,47 +1,21 @@
-import FileDBHandler from "./db/fileDBHandler";
-import { ClopePromise } from "./clope/clope";
-import { Transaction } from "./clope/Transaction";
+import { IDataSourceMapper, AsyncFileDataSource } from "./db/AsyncFileDataSource";
+import { Clope } from "./clope/Clope";
 
 
-/*
-// const parser = new ArgumentParser({
-//         version: '0.0.1',
-//         addHelp:true,
-//         description: 'Argparse example'
-//     }
-// );
-
-// parser.addArgument(
-//     [ '-f', '--foo' ],
-//     {
-//       help: 'foo bar'
-//     }
-//   );
-//   parser.addArgument(
-//     [ '-b', '--bar' ],
-//     {
-//       help: 'bar foo'
-//     }
-//   );
-//   parser.addArgument(
-//     ['--baz'],
-//     {
-//       help: 'baz bar'
-//     } 
-//   );
-// const args = parser.parseArgs();
-// console.log(args);
-*/
-
-function runClope() {
-    const fileDb = new FileDBHandler("testdata/sample.txt", (line) => { new Transaction(line) });
-
-    const clope = new ClopePromise(fileDb)
-        .startCPUClusterization(4)
-        .then(res => console.log(res));
+//could be an object
+let mapfromStringToObjects: IDataSourceMapper<string> = {
+    map: (line: string) => line.split(",")
 }
+
 
 function main(args?: Array<string>) {
-    runClope();
+    const fileSource = new AsyncFileDataSource("/sample.txt", mapfromStringToObjects);
+    const algo = new Clope(fileSource)
+        .execute()
+        .then(() => {
+            //handle result
+        })
 }
 main();
+
+
