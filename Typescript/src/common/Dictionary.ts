@@ -1,41 +1,41 @@
-export interface IDictionary<T, V> {
-    Add(key: T, value: V): void;
-    ContainsKey(key: T): boolean;
+export interface IDictionary<TKey, TValue> {
+    Add(key: TKey, value: TValue): void;
+    ContainsKey(key: TKey): boolean;
     Count(): number;
-    Item(key: T): V;
-    Keys(): T[];
-    Remove(key: T): V;
-    Values(): V[];
+    Item(key: TKey): TValue;
+    Keys(): TKey[];
+    Remove(key: TKey): TValue;
+    Values(): TValue[];
 }
 
-export class Dictionary<T, V> implements IDictionary<T, V> {
-    private items: { [index: string]: V } = {};
+export class Dictionary<TKey, TValue> implements IDictionary<TKey, TValue> {
+    private items: { [index: string]: TValue } = {};
     private count: number = 0;
 
-    private toString(key: T): string {
+    private toString(key: TKey): string {
         //FIXME: написать нормальное приведение к строке
         return JSON.stringify(key);
     }
-    private fromString(sKey: string): T {
+    private fromString(sKey: string): TKey {
         //FIXME: написать нормальное приведение к строке
         return JSON.parse(sKey);
     }
-    public Add(key: T, value: V): void {
+    public Add(key: TKey, value: TValue): void {
         if (!this.items.hasOwnProperty(this.toString(key)))
             this.count++;
         this.items[this.toString(key)] = value;
     }
-    ContainsKey(key: T): boolean {
+    ContainsKey(key: TKey): boolean {
         return this.items.hasOwnProperty(this.toString(key));
     }
     Count(): number {
         return this.count;
     }
-    Item(key: T): V {
+    Item(key: TKey): TValue {
         return this.items[this.toString(key)];
     }
-    Keys(): T[] {
-        var keySet: T[] = [];
+    Keys(): TKey[] {
+        var keySet: TKey[] = [];
         for (var prop in this.items) {
             if (this.items.hasOwnProperty(prop)) {
                 keySet.push(this.fromString(prop));
@@ -43,14 +43,14 @@ export class Dictionary<T, V> implements IDictionary<T, V> {
         }
         return keySet;
     }
-    Remove(key: T): V {
+    Remove(key: TKey): TValue {
         var val = this.items[this.toString(key)];
         delete this.items[this.toString(key)];
         this.count--;
         return val;
     }
-    Values(): V[] {
-        var values: V[] = [];
+    Values(): TValue[] {
+        var values: TValue[] = [];
 
         for (var prop in this.items) {
             if (this.items.hasOwnProperty(prop)) {

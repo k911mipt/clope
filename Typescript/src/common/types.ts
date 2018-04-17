@@ -14,12 +14,7 @@ export interface IAsyncDBHandler {
     Closed(): Promise<void>
 }
 
-export interface IAsyncDBHandlerPromise {
-    Connect(): boolean;
-    Reset(): boolean;
-    ReadLineEvent(action: (tr: ITransaction) => void): void
-    Closed(): Promise<void>
-}
+
 
 
 export interface ITransaction {

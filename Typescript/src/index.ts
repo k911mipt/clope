@@ -9,13 +9,21 @@ let mapfromStringToObjects: IDataSourceMapper<string> = {
 
 
 function main(args?: Array<string>) {
-    const fileSource = new AsyncFileDataSource("/sample.txt", mapfromStringToObjects);
-    const algo = new Clope(fileSource)
-        .execute()
+    const fileSource = new AsyncFileDataSource("../Mushroom_DataSet/agaricus-lepiota.data", mapfromStringToObjects);
+    fileSource
+        .connect()
         .then(() => {
-            //handle result
+            fileSource.readNext((line)=>console.log(line));
+            return fileSource.reset(); // restart if condition 
         })
+
+    // const algo = new Clope(fileSource)
+    //     .execute()
+    //     .then(() => {
+    //         //handle result
+    //     })
 }
 main();
+console.log("test")
 
 

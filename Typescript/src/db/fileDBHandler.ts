@@ -1,9 +1,15 @@
 import { resolve } from 'path';
-import { IAsyncDBHandler, IAsyncDBHandlerPromise, ITransaction } from "../common/types";
+import { IAsyncDBHandler, ITransaction } from "../common/types";
 
 import * as fs from "fs";
 import readline from "readline";
 
+export interface IAsyncDBHandlerPromise {
+    Connect(): boolean;
+    Reset(): boolean;
+    ReadLineEvent(action: (tr: ITransaction) => void): void
+    Closed(): Promise<boolean>
+}
 export default class FileDBHandler implements IAsyncDBHandlerPromise {
 
     stream: fs.ReadStream;
@@ -29,12 +35,12 @@ export default class FileDBHandler implements IAsyncDBHandlerPromise {
 
     ReadLineEvent(action: (tr: ITransaction) => void): void {
         if (this.fileLineReader == null) throw Error("file is not connected")
-
-        this.fileLineReader.on('line', (line) => action(this.mapper(line)))
+        this.fileLineReader.on('line', (line) => console.log(line))
+        //this.fileLineReader.on('line', (line) => action(this.mapper(line)))
     }
 
-    Closed(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    Closed(): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
             if (this.fileLineReader == null) {
                 resolve(false)
             } else {
