@@ -7,9 +7,6 @@ export interface IAsyncDataSource<TRow> {
 
 export abstract class AsyncDataSource<TRow> implements IAsyncDataSource<TRow> {
     isEnd: boolean;
-    /**
-     *
-     */
     constructor() {
         this.isEnd = true;
 
@@ -23,20 +20,4 @@ export abstract class AsyncDataSource<TRow> implements IAsyncDataSource<TRow> {
     public readNext(myAction: (row: TRow) => void): void {
         throw new Error("Method not implemented.");
     }
-    public createMap(): Promise<void> {
-        return this.connect()
-            .then(() => this.readNext(this.FullFillObjectsTable().bind(this)));
-    }
-
-    private FullFillObjectsTable(): any {
-
-    }
-    // public cqewqwrreateMap(): Promise<void> {
-    //     return this.dataSource
-    //         .connect()
-    //         .then(() => this.dataSource.readNext(this.Initialize().bind(this)))
-    //         .then(() => this.dataSource.reset())
-    //         .then(() => this.cleanUP());
-    // }
-
 }

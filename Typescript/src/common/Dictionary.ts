@@ -1,3 +1,4 @@
+
 export interface IDictionary<TKey, TValue> {
     Add(key: TKey, value: TValue): void;
     ContainsKey(key: TKey): boolean;
@@ -6,7 +7,9 @@ export interface IDictionary<TKey, TValue> {
     Keys(): TKey[];
     Remove(key: TKey): TValue;
     Values(): TValue[];
+    TryGetValue(key: TKey): [boolean, TValue];
 }
+
 
 export class Dictionary<TKey, TValue> implements IDictionary<TKey, TValue> {
     private items: { [index: string]: TValue } = {};
@@ -58,5 +61,12 @@ export class Dictionary<TKey, TValue> implements IDictionary<TKey, TValue> {
             }
         }
         return values;
+    }
+    //FIXME: ОБЯЗАТЕЛЬНО ПЕРЕПИСАТЬ, ТУТ КАКОЕ ТО ГОВНО
+    TryGetValue(key: TKey): [boolean, TValue] {
+        let success = this.ContainsKey(key);
+        if (success)
+            return [true, this.Item(key)]
+        else return [false, this.Item(key)]
     }
 }

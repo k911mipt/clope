@@ -1,12 +1,13 @@
-import { IDataSourceMapper } from '../db/AsyncFileDataSource';
+import { IMapper } from './../map/Mapper';
 import { AsyncFileDataSource } from "../db/AsyncFileDataSource";
 import { IAsyncDataSource } from '../db/AsyncDataSource';
 import { ICluster } from './Сluster';
 
 export class Clope<T> {
-
+    mapper: IMapper<T, IAsyncDataSource<T>>
     dataSource: IAsyncDataSource<T>
-    constructor(dataSource: IAsyncDataSource<T>) {
+    constructor(dataSource: IAsyncDataSource<T>, mapper: IMapper<T, IAsyncDataSource<T>>) {
+        this.mapper = mapper;
         this.dataSource = dataSource;
     }
 
@@ -46,10 +47,11 @@ export class Clope<T> {
         await this.dataSource.reset(); // reload logic 
         return Promise.resolve(new Array<ICluster>());
     }
-    Iterate(): any {
-        throw new Error("Method not implemented.");
-    }
     Initialize(): any {
+        throw new Error("Method not implemented.");
+
+    }
+    Iterate(): any {
         throw new Error("Method not implemented.");
     }
     cleanUP(): any {

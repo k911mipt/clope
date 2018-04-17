@@ -1,3 +1,4 @@
+import { MyObject } from './../common/Object';
 import { ITransaction } from "../common/types";
 
 export class Transaction implements ITransaction {
@@ -17,14 +18,21 @@ export class Transaction implements ITransaction {
 }
 
 
-export class TransactionElement {
+export class TransactionElement extends MyObject {
     public Value: any;
     public NumberAttribute: number;
-    public UniqueNumber: number;
+    //public UniqueNumber?: number;
 
-    constructor(value: any, numberAttribute: number, uniqueNumber: number) {
+    constructor(value: any, numberAttribute: number, uniqueNumber?: number) {
+        super();
         this.Value = value;
         this.NumberAttribute = numberAttribute;
-        this.UniqueNumber = uniqueNumber
+        //this.UniqueNumber = uniqueNumber
+    }
+    public GetHashCode(): number {
+        return (this.Value != null ? this.Value.GetHashCode() : 0) ^ this.NumberAttribute;
+    }
+    public Equals(element: TransactionElement): boolean {
+        return (this.NumberAttribute == element.NumberAttribute) && (this.Value == element.Value);
     }
 }
