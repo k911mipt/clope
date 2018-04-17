@@ -1,7 +1,7 @@
 import { IDataSourceMapper } from '../db/AsyncFileDataSource';
 import { AsyncFileDataSource } from "../db/AsyncFileDataSource";
 import { IAsyncDataSource } from '../db/AsyncDataSource';
-import { ICluster } from './dСluster';
+import { ICluster } from './Сluster';
 
 export class Clope<T> {
 
