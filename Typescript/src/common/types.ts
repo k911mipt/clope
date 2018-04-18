@@ -17,14 +17,3 @@ export interface IAsyncDBHandler {
 
 
 
-
-
-export interface ITransactionElement {
-    Value: any;
-    NumberAttribute: number;
-    UniqueNumber: number;
-}
-
-
-
-

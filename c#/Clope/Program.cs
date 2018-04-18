@@ -18,7 +18,8 @@ namespace Clope
             double repulsion = 2.7;
             int clusterColumnNumber = 0; //номер информативной колонки
 
-            string databasePath = "F:\\Git\\Clope\\Mushroom_DataSet\\agaricus-lepiota.data";
+            string databasePath = "..\\..\\..\\..\\Mushroom_DataSet\\agaricus-lepiota.data";
+            //Console.Write(databasePath);
             string outputName = "";
 
             #region commandline handle

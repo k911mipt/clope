@@ -1,24 +1,22 @@
-import { IAsyncDataSource } from './../db/AsyncDataSource';
-import { TransactionElement, Transaction, ITransaction } from '../clope/Transaction';
-import { Dictionary } from '../common/Dictionary';
-import { IRowConverter } from './RowConverter';
+import { ITransaction, Transaction, TransactionElement } from "../clope/Transaction";
+import { TransactionDictionary } from "../common/TransactionDictionary";
+import { IAsyncDataSource } from "../db/AsyncDataSource";
+import { IRowConverter } from "./RowConverter";
 
 export interface ITransactionStore {
-    //FormNewTransaction(elements: Array<any>): ITransaction;
     FullFillObjectsTable(): Promise<void>;
     GetObjectsCount(): number;
-    //readUntilEndPromise() : Promise<ITransaction>
     readUntilEnd(handleTransaction: (tr: ITransaction) => void): Promise<void>;
 }
 
 export abstract class TransactionStore<TIn> implements ITransactionStore {
-    private UniqueObjects: Dictionary<TransactionElement, number>;
+    private UniqueObjects: TransactionDictionary<number>;
     private dataSource: IAsyncDataSource<TIn>;
     private rowConverter: IRowConverter<TIn>;
 
     constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>) {
         this.dataSource = datasource;
-        this.UniqueObjects = new Dictionary<TransactionElement, number>();
+        this.UniqueObjects = new TransactionDictionary<number>();
         this.rowConverter = rowConverter;
 
     }
@@ -72,13 +70,18 @@ export abstract class TransactionStore<TIn> implements ITransactionStore {
         //FIXME: ОБРАТИТЬ ВНИМАНИЕ, ПРОБЛЕМЫ С ОПТИМАЛЬНОСТЬЮ. довести IDictionary до ума
         let transaction = new Transaction(elements.length);
         let transactionElement = new TransactionElement('', 0)
-        elements.forEach((element, index) => {
-            if (element != '?') {
-                transactionElement.Value = element;
-                transactionElement.NumberAttribute = index;
-                this.UniqueObjects.Add(transactionElement, this.UniqueObjects.Count())
-            }
-        })
+        for (let index = 0; index < elements.length; index++) {
+            const element = elements[index];
+            if (element == '?') continue;
+            transactionElement.Value = element;
+            transactionElement.NumberAttribute = index;
+            this.UniqueObjects.Add(transactionElement, this.UniqueObjects.Count())
+        }
+        // elements.forEach((element, index) => {
+        //     if (element != '?') {
+
+        //     }
+        // })
     }
     DisplayObjects(): void {
         console.log(this.UniqueObjects);

@@ -22,11 +22,5 @@ function main(args?: Array<string>) {
         })
     //.then(display)
 }
-let a = new TransactionElement("abc", 5);
-let b = new TransactionElement("abc", 5);
-console.log(a == b);
-console.log(a === b);
-console.log(Object.is(a, b));
-console.log(typeof a);
-//main();
+main();
 //console.log("test")
