@@ -23,21 +23,21 @@ export class Transaction implements ITransaction {
 }
 
 
-export class TransactionElement extends MyObject {
+export class TransactionElement {//extends MyObject {
     public Value: any;
     public NumberAttribute: number;
     //public UniqueNumber?: number;
 
     constructor(value: any, numberAttribute: number, uniqueNumber?: number) {
-        super();
+        //super();
         this.Value = value;
         this.NumberAttribute = numberAttribute;
         //this.UniqueNumber = uniqueNumber
     }
-    public GetHashCode(): number {
-        return (this.Value != null ? this.Value.GetHashCode() : 0) ^ this.NumberAttribute;
-    }
-    public Equals(element: TransactionElement): boolean {
-        return (this.NumberAttribute == element.NumberAttribute) && (this.Value == element.Value);
-    }
+    // public GetHashCode(): number {
+    //     return (this.Value != null ? this.Value.GetHashCode() : 0) ^ this.NumberAttribute;
+    // }
+    // public Equals(element: TransactionElement): boolean {
+    //     return (this.NumberAttribute == element.NumberAttribute) && (this.Value == element.Value);
+    // }
 }
