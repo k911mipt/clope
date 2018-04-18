@@ -10,35 +10,35 @@ export interface ITransactionStore {
 }
 
 export abstract class TransactionStore<TIn> implements ITransactionStore {
-    private UniqueObjects: TransactionDictionary<number>;
+    private elementMap: TransactionDictionary<number>;
     private dataSource: IAsyncDataSource<TIn>;
     private rowConverter: IRowConverter<TIn>;
 
     constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>) {
         this.dataSource = datasource;
-        this.UniqueObjects = new TransactionDictionary<number>();
+        this.elementMap = new TransactionDictionary<number>();
         this.rowConverter = rowConverter;
 
     }
     GetObjectsCount(): number {
-        return this.UniqueObjects.Count();
+        return this.elementMap.Count();
     }
 
     FormNewTransaction(elements: any[]): ITransaction {
         //FIXME: ПРОВЕРИТЬ НА РЕФАКТОРИНГ
         let transaction = new Transaction(elements.length);
         let transactionElement = new TransactionElement('', 0)
-        elements.forEach((element, index) => {
-            if (element != '?') {
-                transactionElement.Value = element;
-                transactionElement.NumberAttribute = index;
-                let [success, elementKey] = this.UniqueObjects.TryGetValue(transactionElement);
-                if (success)
-                    transaction.AddElementKey(elementKey);
-                else
-                    throw new Error("Объект не найден в списке. Проверьте, не изменился ли файл за время работы программы!");
-            }
-        })
+        for (let index = 0; index < elements.length; index++) {
+            const element = elements[index];
+            if (element == '?') continue;
+            transactionElement.Value = element;
+            transactionElement.NumberAttribute = index;
+            let [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
+            if (success)
+                transaction.AddElementKey(elementKey);
+            else
+                throw new Error("Элемент не найден в карте соответствий. Источник данных был изменён за время работы программы!");
+        }
         return transaction;
     }
 
@@ -67,24 +67,17 @@ export abstract class TransactionStore<TIn> implements ITransactionStore {
             })
     }
     public processRowToMap(elements: Array<any>): void {
-        //FIXME: ОБРАТИТЬ ВНИМАНИЕ, ПРОБЛЕМЫ С ОПТИМАЛЬНОСТЬЮ. довести IDictionary до ума
-        let transaction = new Transaction(elements.length);
         let transactionElement = new TransactionElement('', 0)
         for (let index = 0; index < elements.length; index++) {
             const element = elements[index];
             if (element == '?') continue;
             transactionElement.Value = element;
             transactionElement.NumberAttribute = index;
-            this.UniqueObjects.Add(transactionElement, this.UniqueObjects.Count())
+            this.elementMap.Add(transactionElement, this.elementMap.Count())
         }
-        // elements.forEach((element, index) => {
-        //     if (element != '?') {
-
-        //     }
-        // })
     }
     DisplayObjects(): void {
-        console.log(this.UniqueObjects);
+        console.log(this.elementMap);
     }
 }
 

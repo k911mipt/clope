@@ -63,30 +63,29 @@ export class Clope {
             isMoved: false
         };
         const startPhase2 = () => this.transactionDataSource.readUntilEnd(this.createPhase2HandlerFunc(phaseState).bind(this));
-        console.log("Started phase2");
-        // return startPhase2()
-        //     .then(() => {
-        //         if (phaseState.isMoved) {
-        //             console.log("Started end phase2");
-        //             phaseState.isMoved = false;
-        //             return this.processSecondPhaseAsync()
-        //         }
-        //         else {
-        //             this.cleanClusters()
-        //             return Promise.resolve();
-        //         }
-        //     })
-
-        await startPhase2()
-        if (phaseState.isMoved) {
-            console.log("Started end phase2");
-            phaseState.isMoved = false;
-            return await this.processSecondPhaseAsync()
-        }
-        else {
-            this.cleanClusters()
-            return Promise.resolve();
-        }
+        // Вариант на промисах
+        return startPhase2()
+            .then(() => {
+                if (phaseState.isMoved) {
+                    phaseState.isMoved = false;
+                    return this.processSecondPhaseAsync()
+                }
+                else {
+                    this.cleanClusters()
+                    return Promise.resolve();
+                }
+            })
+        //Вариант на async await
+        // await startPhase2()
+        // if (phaseState.isMoved) {
+        //     console.log("Started end phase2");
+        //     phaseState.isMoved = false;
+        //     return await this.processSecondPhaseAsync()
+        // }
+        // else {
+        //     this.cleanClusters()
+        //     return Promise.resolve();
+        // }
     }
 
     private cleanClusters() {

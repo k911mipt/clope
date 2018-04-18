@@ -1,5 +1,4 @@
-//import { ReadLine, createInterface } from "readline";
-import { IAsyncDataSource, AsyncDataSource } from "./AsyncDataSource";
+import { IAsyncDataSource } from "./AsyncDataSource";
 import fs from "fs";
 import ReadLine from "readline";
 // export interface IDataSourceMapper<T> {
@@ -14,7 +13,6 @@ export class AsyncFileDataSource implements IAsyncDataSource<string> {
     fileLineReader?: ReadLine.ReadLine;
 
     constructor(filePath: string) {
-        //super();
         this.isEnd = true;
         this.filePath = filePath;
     }
@@ -26,18 +24,15 @@ export class AsyncFileDataSource implements IAsyncDataSource<string> {
         return new Promise<void>((resolve) => resolve());
     }
     reset(): Promise<void> {
-
-
-        return new Promise<void>(((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             if (this.fileLineReader) {
                 this.fileLineReader.on('close', resolve)
             } else {
                 reject()
             }
-        }))
+        })
             .then(this.connect.bind(this))
     }
-
     readNext(myAction: (row: string) => void): void {
         if (this.fileLineReader == null) throw Error("file is not connected")
         this.fileLineReader.on('line', (line) => myAction(line))

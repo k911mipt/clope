@@ -9,8 +9,8 @@ function main(args?: Array<string>) {
     //const fileSource = new AsyncFileDataSource("../Mushroom_DataSet/agaricus-lepiota.data", mapfromStringToObjects);
     const fileSource = new AsyncFileDataSource('../Mushroom_DataSet/agaricus-lepiota.data');
     const rowConverter = new RowConverterStringSplit(",");
-    const mapper = new TransactionFileStore(fileSource, rowConverter);
-    const clope = new Clope(mapper, 2.7)
+    const repo = new TransactionFileStore(fileSource, rowConverter);
+    const clope = new Clope(repo, 2.7)
 
     console.time("clope")
     clope.execute()
