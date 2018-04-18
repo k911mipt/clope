@@ -1,5 +1,10 @@
 import { MyObject } from './../common/Object';
-import { ITransaction } from "../common/types";
+export interface ITransaction {
+    readonly elementKeys: Array<number>;
+    elementKeyCount: number;    //Количество объектов
+    AddElementKey(idObject: number): void
+    getElement(num: number): number;
+}
 
 export class Transaction implements ITransaction {
     public readonly elementKeys: Array<number>;  //список id объектов

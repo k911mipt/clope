@@ -61,6 +61,7 @@ namespace Clope
             //Повторять
             do
             {
+                Console.Write("StartedPhase2");
                 //Console.ReadKey();
                 //перейти в начало таблицы;
                 _db.Reset();

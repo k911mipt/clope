@@ -13,9 +13,18 @@ export class RowConverterStringSplit extends RowConverter<string>{
     convert(row: string): Array<any> {
         return row.split(this.separator, this.limit)
     }
+
     constructor(separator: string | RegExp, limit?: number) {
         super();
         this.separator = separator;
         this.limit = limit;
     }
+
 }
+
+
+function rowmapper(separator: string | RegExp, limit?: number) {
+    return (line: string) => line.split(separator, limit)
+}
+
+

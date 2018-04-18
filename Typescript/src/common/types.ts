@@ -17,10 +17,7 @@ export interface IAsyncDBHandler {
 
 
 
-export interface ITransaction {
-    readonly elementKeys: Array<number>;
-    AddElementKey(idObject: number): void
-}
+
 
 export interface ITransactionElement {
     Value: any;

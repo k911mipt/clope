@@ -1,30 +1,44 @@
-import { Transaction } from "./Transaction";
+import { ITransaction } from "./Transaction";
+import MathSupport from "./MathSupport";
+import { isNullOrUndefined } from "util";
+
+//import { Transaction } from "./Transaction";
 export interface ICluster {
 
 }
 
-class Cluster implements ICluster {
+export class Cluster implements ICluster {
     private width: number;  //Ширина кластера
     private square: number; //Площадь кластера
     private occ: Array<number>;     //Таблица количества объектов по номерам в кластере
-    private numberTransactions: number;
+    public NumberTransactions: number;
     private mathSupport: MathSupport;
 
     /**
      *
      */
-    constructor(capacity: number, ms: MathSupport) {
-        this.mathSupport = ms;
+    constructor(capacity: number, mathSupport: MathSupport) {
+        this.mathSupport = mathSupport;
         this.occ = new Array<number>(capacity);
+        for (let i = 0; i < this.occ.length; i++) {
+            this.occ[i] = 0;
+        }
+
         this.width = 0;
         this.square = 0;
-        this.numberTransactions = 0;
+        this.NumberTransactions = 0;
+    }
+
+    private check(transaction: ITransaction, i: number, threshold: number): boolean {
+        const element = this.occ[transaction.getElement(i)];
+
+        return (element == null || element == threshold)
     }
 
     //public AddTransaction(transaction: Transaction)
-    public addTransaction(transaction: Transaction): void {
+    public AddTransaction(transaction: ITransaction): void {
         this.square += transaction.elementKeyCount;
-        this.numberTransactions++;
+        this.NumberTransactions++;
         for (var i = 0; i < transaction.elementKeyCount; i++) {
             if (this.occ[transaction.getElement(i)] == 0)
                 this.width++;
@@ -32,9 +46,9 @@ class Cluster implements ICluster {
         }
     }
 
-    public deleteTransaction(transaction: Transaction): void {
+    public DelTransaction(transaction: ITransaction): void {
         this.square -= transaction.elementKeyCount;
-        this.numberTransactions--;
+        this.NumberTransactions--;
         for (var i = 0; i < transaction.elementKeyCount; i++) {
             this.occ[transaction.getElement(i)]--;
             if (this.occ[transaction.getElement(i)] == 0)
@@ -42,7 +56,7 @@ class Cluster implements ICluster {
         }
     }
 
-    public coundDeltaAdd(transaction: Transaction): number {
+    public DeltaAdd(transaction: ITransaction): number {
         const S_new = this.square + transaction.elementKeyCount;
         let W_new = this.width;
 
@@ -51,16 +65,16 @@ class Cluster implements ICluster {
         for (var i = 0; i < transaction.elementKeyCount; i++)
             if (this.occ[transaction.getElement(i)] == 0)
                 W_new++;
-        if (this.numberTransactions > 0)
-            return this.Grad(S_new, this.numberTransactions + 1, W_new) - this.Grad(this.square, this.numberTransactions, this.width);
-        return this.Grad(S_new, this.numberTransactions + 1, W_new);
+        if (this.NumberTransactions > 0)
+            return this.Grad(S_new, this.NumberTransactions + 1, W_new) - this.Grad(this.square, this.NumberTransactions, this.width);
+        return this.Grad(S_new, this.NumberTransactions + 1, W_new);
 
     }
-    public countDeltaDel(transaction: Transaction): number {
+    public DeltaDel(transaction: ITransaction): number {
         let S_new = this.square - transaction.elementKeyCount;
         let W_new = this.width;
 
-        if (this.numberTransactions < 1)
+        if (this.NumberTransactions < 1)
             throw Error("Попытка удаления транзакции из пустого кластера, проверьте исходный код класса Clope!")
 
         //TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
@@ -69,12 +83,12 @@ class Cluster implements ICluster {
             if (this.occ[transaction.getElement(i)] == 1)
                 W_new--;
 
-        if (this.numberTransactions == 1) {
+        if (this.NumberTransactions == 1) {
             if (W_new != 0) throw Error("Чертовщина, разбирайся в алгоритме. Удаляет вроде как последнюю транзакцию из кластера, но она не удаляется");
-            return this.Grad(this.square, this.numberTransactions, this.width) - this.Grad(S_new, this.numberTransactions - 1, W_new);
+            return this.Grad(this.square, this.NumberTransactions, this.width) - this.Grad(S_new, this.NumberTransactions - 1, W_new);
         }
 
-        return this.Grad(this.square, this.numberTransactions, this.width);
+        return this.Grad(this.square, this.NumberTransactions, this.width);
     }
 
     private Grad(S: number, N: number, width: number): number {

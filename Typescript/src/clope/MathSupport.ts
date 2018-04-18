@@ -1,4 +1,4 @@
-class MathSupport {
+export default class MathSupport {
     public readonly Repulsion: number;
     private PrecalculatedWPowR: Array<number>;
     constructor(r: number) {

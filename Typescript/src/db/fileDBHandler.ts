@@ -1,8 +1,10 @@
 import { resolve } from 'path';
-import { IAsyncDBHandler, ITransaction } from "../common/types";
+import { IAsyncDBHandler } from "../common/types";
+import { ITransaction } from '../clope/Transaction';
 
 import * as fs from "fs";
 import readline from "readline";
+
 
 export interface IAsyncDBHandlerPromise {
     Connect(): boolean;
