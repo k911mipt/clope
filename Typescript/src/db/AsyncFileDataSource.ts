@@ -4,9 +4,6 @@ import ReadLine from "readline";
 // export interface IDataSourceMapper<T> {
 //     map(row: T): Array<any>
 // }
-
-
-
 export class AsyncFileDataSource implements IAsyncDataSource<string> {
     isEnd: boolean;
     filePath: string;

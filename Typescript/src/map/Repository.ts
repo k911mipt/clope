@@ -1,23 +1,40 @@
-import { ITransaction, Transaction, TransactionElement } from "../clope/Transaction";
-import { TransactionDictionary } from "../common/TransactionDictionary";
+import { ITransaction, Transaction, ITransactionElement, TransactionElement } from "../clope/Transaction";
+import { TransactionArrayDictionary, ITransactionDictionary, TransactionMapDictionary } from "../common/TransactionDictionary";
 import { IAsyncDataSource } from "../db/AsyncDataSource";
 import { IRowConverter } from "./RowConverter";
 
-export interface ITransactionStore {
+export interface IRepository {
     FullFillObjectsTable(): Promise<void>;
     GetObjectsCount(): number;
     readUntilEnd(handleTransaction: (tr: ITransaction) => void): Promise<void>;
 }
 
-export abstract class TransactionStore<TIn> implements ITransactionStore {
-    private elementMap: TransactionDictionary<number>;
+export class Repository<TIn> implements IRepository {
     private dataSource: IAsyncDataSource<TIn>;
     private rowConverter: IRowConverter<TIn>;
 
-    constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>) {
+    private elementMap: ITransactionDictionary<number>;
+    private classesMap: ITransactionDictionary<number>;
+    private classesIDs: Array<TransactionElement>;
+    private nullElements: Set<any>;
+    private missedColumns: Set<number>;
+
+
+    constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>, nullElements?: Array<any>, missedColumns?: Array<number>) {
         this.dataSource = datasource;
-        this.elementMap = new TransactionDictionary<number>();
         this.rowConverter = rowConverter;
+
+        this.elementMap = new TransactionArrayDictionary<number>();
+        this.classesMap = new TransactionArrayDictionary<number>();
+        this.classesIDs = new Array<TransactionElement>();
+        this.nullElements = new Set<any>();
+        if (nullElements != null)
+            nullElements.forEach((value) =>
+                this.nullElements.add(value));
+        this.missedColumns = new Set<number>();
+        if (missedColumns != null)
+            missedColumns.forEach((value) =>
+                this.missedColumns.add(value));
 
     }
     GetObjectsCount(): number {
@@ -30,9 +47,11 @@ export abstract class TransactionStore<TIn> implements ITransactionStore {
         let transactionElement = new TransactionElement('', 0)
         for (let index = 0; index < elements.length; index++) {
             const element = elements[index];
-            if (element == '?') continue;
-            transactionElement.Value = element;
+            if (this.nullElements.has(element)) continue;
+            //if (element == '?') continue;
+            transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
+            //if (this.classesMap.ContainsKey(transactionElement)) continue;
             let [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
             if (success)
                 transaction.AddElementKey(elementKey);
@@ -58,35 +77,53 @@ export abstract class TransactionStore<TIn> implements ITransactionStore {
     FullFillObjectsTable(): Promise<void> {
         return this.dataSource
             .connect()
-            .then(() => this.dataSource.readNext((row) => this.processRowToMap(this.rowConverter.convert(row))))
+            .then(() => this.dataSource.readNext((row) => this.processRowToRepository(this.rowConverter.convert(row))))
+            //.then(this.setClassesIDs.bind(this))
             .then(() => this.dataSource.reset())
-            .then(this.DisplayObjects.bind(this))
+            .then(this.setClassesIDs.bind(this))
+            //            .then(this.DisplayObjects.bind(this))
             .catch(er => {
                 console.log(er)
                 return Promise.reject(er)
             })
     }
-    public processRowToMap(elements: Array<any>): void {
+    public processRowToRepository(elements: Array<any>): void {
         let transactionElement = new TransactionElement('', 0)
         for (let index = 0; index < elements.length; index++) {
             const element = elements[index];
-            if (element == '?') continue;
-            transactionElement.Value = element;
+            if (this.nullElements.has(element)) continue;
+            //if (element == '?') continue;
+            transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
             this.elementMap.Add(transactionElement, this.elementMap.Count())
         }
     }
-    DisplayObjects(): void {
-        console.log(this.elementMap);
+    // DisplayObjects(): void {
+    //     console.log(this.elementMap);
+    // }
+    public setClassesIDs(): void {
+        //const ids = this.classesIDs;
+        //let ids = new Array<ITransactionElement>();
+        this.elementMap.forEach((uniqueNumber, transactionElement) => {
+            //if (transactionElement.NumberAttribute == 0)
+            if (this.missedColumns.has(transactionElement.NumberAttribute)) {
+                this.classesMap.Add(transactionElement, uniqueNumber);
+                this.classesIDs.push(new TransactionElement(transactionElement.AttributeValue, uniqueNumber))
+                //                console.log(transactionElement.AttributeValue, uniqueNumber);
+            }
+        })
+    }
+    public getClassesIDs(): Array<ITransactionElement> {
+        return this.classesIDs;
     }
 }
 
 
-export class TransactionFileStore extends TransactionStore<string> {
-    /**
-     *
-     */
-    //constructor(datasource: TFileDataSource, rowMapper: IRowMapper<TRow>) {
-    //    super(datasource, rowMapper);
-    //}
-}
+// export class TransactionFileStore extends TransactionStore<string> {
+//     /**
+//      *
+//      */
+//     //constructor(datasource: TFileDataSource, rowMapper: IRowMapper<TRow>) {
+//     //    super(datasource, rowMapper);
+//     //}
+// }

@@ -1,6 +1,6 @@
 export interface IAsyncDataSource<TRow> {
     //isEnd: boolean;
-    reset(): Promise<void>; // or boolean
+    reset(): Promise<void>;
     connect(): Promise<void>;
     readNext(myAction: (row: TRow) => void): void;
 }

@@ -1,8 +1,5 @@
 import { ITransaction } from "./Transaction";
 import MathSupport from "./MathSupport";
-import { isNullOrUndefined } from "util";
-
-//import { Transaction } from "./Transaction";
 export interface ICluster {
 
 }
@@ -13,6 +10,8 @@ export class Cluster implements ICluster {
     private occ: Array<number>;     //Таблица количества объектов по номерам в кластере
     public NumberTransactions: number;
     private mathSupport: MathSupport;
+
+    public getOCC = (num: number) => this.occ[num];
 
     /**
      *

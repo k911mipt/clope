@@ -20,15 +20,15 @@ export class Transaction implements ITransaction {
 }
 export interface ITransactionElement {
     NumberAttribute: number;
-    Value: any;
+    AttributeValue: any;
     //UniqueNumber: number;
 }
-export class TransactionElement {
+export class TransactionElement implements ITransactionElement {
     public NumberAttribute: number;
-    public Value: any;
+    public AttributeValue: any;
     //public UniqueNumber?: number;
     constructor(value: any, numberAttribute: number, uniqueNumber?: number) {
-        this.Value = value;
+        this.AttributeValue = value;
         this.NumberAttribute = numberAttribute;
         //this.UniqueNumber = uniqueNumber
     }

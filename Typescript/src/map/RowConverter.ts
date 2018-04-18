@@ -1,5 +1,4 @@
 import { timingSafeEqual } from "crypto";
-
 export interface IRowConverter<TRow> {
     convert(row: TRow): Array<any>
 }
@@ -23,8 +22,8 @@ export class RowConverterStringSplit extends RowConverter<string>{
 }
 
 
-function rowmapper(separator: string | RegExp, limit?: number) {
-    return (line: string) => line.split(separator, limit)
-}
+// function rowConverter(separator: string | RegExp, limit?: number) {
+//     return (line: string) => line.split(separator, limit)
+// }
 
 
