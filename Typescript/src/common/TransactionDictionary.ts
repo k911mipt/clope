@@ -15,8 +15,6 @@ export interface ITransactionDictionary<TValue> {
     Count(): number;
     Item(key: ITransactionElement): TValue;
     TryGetValue(key: ITransactionElement): [boolean, TValue | undefined];
-
-    //forEach(callbackfn: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void, thisArg?: any): void;
     forEach(callbackfn: (value: TValue, key: TransactionElement) => void, thisArg?: any): void;
 }
 export class TransactionArrayDictionary<TValue> implements ITransactionDictionary<TValue> {
@@ -28,10 +26,6 @@ export class TransactionArrayDictionary<TValue> implements ITransactionDictionar
     }
     private count: number = 0;
     private MapOfMap: Array<Map<any, TValue>> = new Array<Map<any, TValue>>();
-    // forEach(callbackfn: (value: [TKey, TValue], index: number, array: [TKey, TValue][]) => void, thisArg?: any): void {
-    //     this.MapOfMap[0].forEach
-    //     throw new Error("Method not implemented!");
-    // }
     public Add(key: ITransactionElement, value: TValue): void {
         if (key.NumberAttribute >= this.MapOfMap.length)
             for (let index = this.MapOfMap.length; index <= key.NumberAttribute; index++)
@@ -72,8 +66,8 @@ export class TransactionArrayDictionary<TValue> implements ITransactionDictionar
         return [false, undefined];
     }
 }
+//Чуть другой вариант. Не используется, по быстродействию то же самое.
 export class TransactionMapDictionary<TValue> implements ITransactionDictionary<TValue> {
-    //forEach(callbackfn: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void, thisArg?: any): void;
     forEach(callbackfn: (value: TValue, key: TransactionElement) => void, thisArg?: any): void {
         throw new Error("Method not implemented.");
     }

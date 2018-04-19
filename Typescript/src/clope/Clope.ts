@@ -1,7 +1,7 @@
-import { IRepository } from '../map/Repository';
-import { ICluster, Cluster, ClusterWithMissedClusters } from './Cluster';
-import { ITransaction } from './Transaction';
-import MathSupport from './MathSupport';
+import { IRepository } from "../map/Repository";
+import { ICluster, Cluster } from "./Cluster";
+import { ITransaction } from "./Transaction";
+import MathSupport from "./MathSupport";
 
 export class Clope {
     private repository: IRepository
@@ -12,16 +12,9 @@ export class Clope {
     constructor(repository: IRepository, repulsion: number) {
         this.repository = repository;
         this.mathSupport = new MathSupport(repulsion)
-        this.clusters = new Array<Cluster<ITransaction>>();
+        this.clusters = new Array<ICluster<ITransaction>>();
         this.TableClusters = new Array<number>();
     }
-
-    // private addNewClusterToClusterList(): void {
-    //     this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
-    // }
-    //private addNewClusterToClusterList = () => this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
-    //private addNewClusterToClusterList?: () => void;
-
 
     private InitializationHandler(addNewClusterToClusterList: () => void) {
         let iMaxProfitCluster = 0;
@@ -50,11 +43,7 @@ export class Clope {
     }
 
     private /*async*/ InitializeAsync(): Promise<void> {
-        //FIXME: удалить функцию и зависимости
-        const addNewClusterToClusterList = (this.repository.HasMissedColumns())
-            ? () => this.clusters.push(new ClusterWithMissedClusters(this.repository.GetObjectsCount(), this.mathSupport))
-            : () => this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
-
+        const addNewClusterToClusterList = () => this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
         const handler = this.InitializationHandler(addNewClusterToClusterList).bind(this);
         return this.repository.ReadUntilEnd(handler)
             .then(() => {
@@ -112,8 +101,6 @@ export class Clope {
                 i++;
         }
     }
-    // this.clusters = new Array<Cluster<ITransaction>>();
-    // this.TableClusters = new Array<number>();
     Execute(): Promise<{
         clusters: Array<ICluster<ITransaction>>,
         tableClusters: Array<number>
@@ -126,9 +113,7 @@ export class Clope {
             })
             .then(this.InitializeAsync.bind(this))
             .then(this.IterateAsync.bind(this))
-            //.then((() => this.clusters));
             .then(() => {
-                //return this.clusters
                 return {
                     clusters: this.clusters,
                     tableClusters: this.TableClusters

@@ -1,33 +1,8 @@
-import { Display } from './common/Display';
-import { TransactionElement } from './clope/Transaction';
 import { AsyncFileDataSource } from "./db/AsyncFileDataSource";
 import { RowConverterStringSplit } from "./map/RowConverter";
 import { Repository } from "./map/Repository";
 import { Clope } from "./clope/Clope";
-
-function DisplayClusters(clope: Clope, repo: Repository<string>) {
-    const classes = repo.GetClassesIDs();
-    let sum = new Array<number>(classes.length);
-    let tempstr = "CLUSTER";
-    for (let i = 0; i < classes.length; i++)
-        tempstr = tempstr + "\t" + classes[i].AttributeValue;
-    console.log(tempstr);
-    for (let i = 0; i < clope.clusters.length; i++) {
-        tempstr = (i + 1).toString();
-        for (let j = 0; j < classes.length; j++) {
-            tempstr += "\t" + clope.clusters[i].GetOCC(classes[j].NumberAttribute);
-            if (sum[j] == null) sum[j] = 0;
-            sum[j] += clope.clusters[i].GetOCC(classes[j].NumberAttribute);
-        }
-        console.log(tempstr);
-    }
-    console.log("Total");
-    tempstr = "";
-    for (let j = 0; j < classes.length; j++)
-        tempstr += "\t" + sum[j];
-    console.log(tempstr);
-}
-
+import { Display } from "./common/Display";
 
 async function main(r: number) {
     const fileSource = new AsyncFileDataSource('../Mushroom_DataSet/agaricus-lepiota.data');
@@ -43,13 +18,7 @@ async function main(r: number) {
     console.timeEnd("clope " + r.toString());
     console.log("finished");
     const display = new Display(repo, result.clusters, result.tableClusters);
-    //display.Out();
-
-    // console.log(clope.clusters);
-    // console.log(repo.getClassesIDs());
-    //DisplayClusters(clope, repo);
     display.GroupByColumnUniqueElementsAndDisplay(0);
-    //display.InitializeAsync();
 }
 
 main(2.7);

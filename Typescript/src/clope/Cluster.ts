@@ -1,9 +1,7 @@
-import { ITransaction, ITransactionWithMissedClusters } from "./Transaction";
+import { ITransaction } from "./Transaction";
 import MathSupport from "./MathSupport";
 export interface ICluster<T extends ITransaction> {
     NumberTransactions: number;
-    //constructor(capacity: number, mathSupport: MathSupport);
-    //new(): ICluster;
     GetOCC(num: number): number;
     AddTransaction(transaction: T): void;
     DelTransaction(transaction: T): void;
@@ -24,7 +22,6 @@ export class Cluster<T extends ITransaction> implements ICluster<T> {
      *
      */
     constructor(capacity: number, mathSupport: MathSupport) {
-        //console.log("created old");
         this.mathSupport = mathSupport;
         this.occ = new Array<number>(capacity);
         for (let i = 0; i < this.occ.length; i++) {
@@ -93,19 +90,5 @@ export class Cluster<T extends ITransaction> implements ICluster<T> {
     }
     protected Grad(S: number, N: number, width: number): number {
         return S * N / this.mathSupport.GetWPowR(width);
-    }
-}
-//FIXME: удалить класс и зависимости
-export class ClusterWithMissedClusters extends Cluster<ITransactionWithMissedClusters> {
-    /**
-     *
-     */
-    constructor(capacity: number, mathSupport: MathSupport) {
-        super(capacity, mathSupport);
-        //console.log("created new");
-    }
-    protected IsElementDeterminative(transaction: ITransactionWithMissedClusters, index: number, threshold: number): boolean {
-        const elementKey = transaction.GetElementKey(index);
-        return (!transaction.GetElementKeyStatus(index)) && (this.occ[elementKey] == threshold)
     }
 }

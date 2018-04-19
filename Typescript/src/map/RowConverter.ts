@@ -19,10 +19,3 @@ export class RowConverterStringSplit extends RowConverter<string>{
     }
 
 }
-
-
-// function rowConverter(separator: string | RegExp, limit?: number) {
-//     return (line: string) => line.split(separator, limit)
-// }
-
-

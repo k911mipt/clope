@@ -1,4 +1,4 @@
-import { ITransaction, Transaction, ITransactionElement, TransactionElement, ITransactionWithMissedClusters, TransactionWithMissedClusters } from "../clope/Transaction";
+import { ITransaction, Transaction, ITransactionElement, TransactionElement } from "../clope/Transaction";
 import { TransactionArrayDictionary, ITransactionDictionary, TransactionMapDictionary } from "../common/TransactionDictionary";
 import { IAsyncDataSource } from "../db/AsyncDataSource";
 import { IRowConverter } from "./RowConverter";
@@ -9,7 +9,6 @@ export interface IRepository {
     GetObjectsCount(): number;
     ReadUntilEnd(handleTransaction: (tr: ITransaction) => void): Promise<void>;
     UpdateSkipRules(clusterColumns?: Array<number>, missedColumns?: Array<number>): void;
-    HasMissedColumns(): boolean;
     GetClassesIDs(): Array<ITransactionElement>;
 }
 
@@ -23,9 +22,6 @@ export class Repository<TIn> implements IRepository {
     private nullElements: Set<any>;
     private missedColumns: Set<number>;
     private clusterColumns: Set<number>;
-    private CreateNewTransaction: (capacity: number) => ITransaction;
-    private AddElementToTransaction: (transaction: ITransaction, index: number, elementKey?: number) => void;
-
 
     constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>, nullElements?: Array<any>, clusterColumns?: Array<number>, missedColumns?: Array<number>) {
         this.dataSource = datasource;
@@ -51,11 +47,6 @@ export class Repository<TIn> implements IRepository {
             missedColumns.forEach((value) =>
                 this.missedColumns.add(value));
         }
-        //this.missedColumns = this.clusterColumns;
-        // this.createNewTransaction = this.setNewTransactionConstructor(clusterColumns != null);
-        // this.addElementToTransaction = this.setTransactionElementAdder(clusterColumns != null);
-        this.CreateNewTransaction = this.SetNewTransactionConstructor(false)
-        this.AddElementToTransaction = this.SetTransactionElementAdder(false);
     }
     public UpdateSkipRules(clusterColumns?: Array<number>, missedColumns?: Array<number>): void {
         this.clusterColumns.delete;
@@ -71,38 +62,16 @@ export class Repository<TIn> implements IRepository {
             missedColumns.forEach((value) =>
                 this.missedColumns.add(value));
         }
-        //this.missedColumns = this.clusterColumns;
-        this.CreateNewTransaction = this.SetNewTransactionConstructor(clusterColumns != null)
-        this.AddElementToTransaction = this.SetTransactionElementAdder(clusterColumns != null);
     }
     public GetObjectsCount(): number {
         return this.elementMap.Count();
     }
-    //FIXME: удалить функцию и зависимости
-    public HasMissedColumns = () => false//(this.missedColumns.size > 0)
-    private NeedToSkipColumn = (index: number) => this.missedColumns.has(index);
 
-    //FIXME: удалить функцию и зависимости
-    private SetNewTransactionConstructor(hasMissedClusters: boolean): (capacity: number) => ITransaction {
-        if (hasMissedClusters)
-            return (capacity: number) => new TransactionWithMissedClusters(capacity)
-        else
-            return (capacity: number) => new Transaction(capacity)
-    }
-    //FIXME: удалить функцию и зависимости
-    private SetTransactionElementAdder(hasMissedClusters: boolean):
-        (transaction: ITransaction, index: number, elementKey?: number) => void {
-        if (hasMissedClusters)
-            return (transaction: ITransaction, index: number, elementKey?: number) =>
-                transaction.AddElementKey(elementKey, this.missedColumns.has(index))
-        else
-            return (transaction: ITransaction, index: number, elementKey?: number) =>
-                transaction.AddElementKey(elementKey)
-    }
+    private NeedToSkipColumn = (index: number) => this.missedColumns.has(index);
 
     FormNewTransaction(elements: any[]): ITransaction {
         //TODO: ПРОВЕРИТЬ НА РЕФАКТОРИНГ
-        const transaction = this.CreateNewTransaction(elements.length)
+        const transaction = new Transaction(elements.length)
         const transactionElement = new TransactionElement('', 0)
         for (let index = 0; index < elements.length; index++) {
             if (this.NeedToSkipColumn(index)) continue;
@@ -110,10 +79,9 @@ export class Repository<TIn> implements IRepository {
             if (this.nullElements.has(element)) continue;
             transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
-            //if (this.classesMap.ContainsKey(transactionElement)) continue;
             let [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
             if (success)
-                this.AddElementToTransaction(transaction, index, elementKey)
+                transaction.AddElementKey(elementKey)
             else
                 throw new Error("Элемент не найден в карте соответствий. Источник данных был изменён за время работы программы!");
         }
