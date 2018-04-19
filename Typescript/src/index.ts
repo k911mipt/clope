@@ -31,7 +31,11 @@ function DisplayClusters(clope: Clope, repo: Repository<string>) {
 async function main(r: number) {
     const fileSource = new AsyncFileDataSource('../Mushroom_DataSet/agaricus-lepiota.data');
     const rowConverter = new RowConverterStringSplit(",");
-    const repo = new Repository(fileSource, rowConverter, ['?'], [0]);
+    //const repo = new Repository(fileSource, rowConverter, ['?'], [0], [0]);
+    //const repo = new Repository(fileSource, rowConverter, ['?'], [0], [1]);
+    const repo = new Repository(fileSource, rowConverter, ['?'], [0], [0]);
+    //const repo = new Repository(fileSource, rowConverter, ['?']);
+    //const repo = new Repository(fileSource, rowConverter, ['?']);
     const clope = new Clope(repo, r);
 
     await clope.execute();
@@ -45,6 +49,7 @@ async function main(r: number) {
 }
 
 main(2.7);
+//main(0.21);
 //main(1.7);
 // main(0.7);
 // main(4.7);

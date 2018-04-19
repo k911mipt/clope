@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "crypto";
+// import { timingSafeEqual } from "crypto";
 export interface IRowConverter<TRow> {
     convert(row: TRow): Array<any>
 }

@@ -1,36 +1,42 @@
 import { IRepository } from '../map/Repository';
 import { AsyncFileDataSource } from "../db/AsyncFileDataSource";
 import { IAsyncDataSource } from '../db/AsyncDataSource';
-import { ICluster, Cluster } from './Сluster';
+import { ICluster, Cluster, ClusterWithMissedClusters } from './Сluster';
 import { ITransaction } from './Transaction';
 import MathSupport from './MathSupport';
 
 export class Clope {
-    transactionDataSource: IRepository
-    public clusters: Array<Cluster>;
+    repository: IRepository
+    public clusters: Array<ICluster<ITransaction>>;
     private TableClusters: Array<number>;
     private mathSupport: MathSupport;
 
-    constructor(transactionDataSource: IRepository, repulsion: number) {
-        this.transactionDataSource = transactionDataSource;
+    constructor(repository: IRepository, repulsion: number) {
+        this.repository = repository;
         this.mathSupport = new MathSupport(repulsion)
-        this.clusters = new Array<Cluster>();
+        this.clusters = new Array<Cluster<ITransaction>>();
         this.TableClusters = new Array<number>();
     }
 
-    private createPhaseHandlerFunc() {
+    // private addNewClusterToClusterList(): void {
+    //     this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
+    // }
+    //private addNewClusterToClusterList = () => this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
+    //private addNewClusterToClusterList?: () => void;
+
+
+    private InitializationHandler(addNewClusterToClusterList: () => void) {
         let iMaxProfitCluster = 0;
         return (transaction: ITransaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1)
-                this.clusters.push(new Cluster(this.transactionDataSource.GetObjectsCount(), this.mathSupport));
-
+                addNewClusterToClusterList();
             iMaxProfitCluster = this.Profit(transaction);
             this.clusters[iMaxProfitCluster].AddTransaction(transaction);
             this.TableClusters.push(iMaxProfitCluster);
         }
     }
 
-    private createPhase2HandlerFunc(phaseState: { isMoved: boolean }) {
+    private IteratonHandler(phaseState: { isMoved: boolean }) {
         let j = 0;
         return (transaction: ITransaction) => {
             const iCurrentCluster = this.TableClusters[j];
@@ -45,29 +51,38 @@ export class Clope {
         }
     }
 
-    private /*async*/ processFirstPhaseAsync(): Promise<void> {
-        return this.transactionDataSource.readUntilEnd(this.createPhaseHandlerFunc().bind(this))
+    private /*async*/ InitializeAsync(): Promise<void> {
+        //if (this.repository.hasMissedColumns())
+        //    this.clusters = new Array<ClusterWithMissedClusters>();
+        //Блоки иф объединить нельзя, иначе следущая команта "handler = ..." не увидит созданной функции как парамета
+        //пришлось писать тернарник.
+        const addNewClusterToClusterList = (this.repository.hasMissedColumns())
+            ? () => this.clusters.push(new ClusterWithMissedClusters(this.repository.GetObjectsCount(), this.mathSupport))
+            : () => this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport))
+
+        const handler = this.InitializationHandler(addNewClusterToClusterList).bind(this);
+        return this.repository.readUntilEnd(handler)
             .then(() => {
                 if (this.clusters[this.clusters.length - 1].NumberTransactions == 0)
                     this.clusters.pop();
             })
         //Вариант на async await
-        // await this.transactionDataSource.readUntilEnd(this.createPhaseHandlerFunc().bind(this))
+        // await this.transactionDataSource.readUntilEnd(this.InitializationHandler().bind(this))
         // if (this.clusters[this.clusters.length - 1].NumberTransactions == 0)
         //     this.clusters.pop();
     }
 
-    private /*async*/ processSecondPhaseAsync(): Promise<void> {
-        let phaseState = {
+    private /*async*/ IterateAsync(): Promise<void> {
+        const phaseState = {
             isMoved: false
         };
-        const startPhase2 = () => this.transactionDataSource.readUntilEnd(this.createPhase2HandlerFunc(phaseState).bind(this));
+        const startPhase2 = () => this.repository.readUntilEnd(this.IteratonHandler(phaseState).bind(this));
         // Вариант на промисах
         return startPhase2()
             .then(() => {
                 if (phaseState.isMoved) {
                     phaseState.isMoved = false;
-                    return this.processSecondPhaseAsync()
+                    return this.IterateAsync()
                 }
                 else {
                     this.cleanClusters()
@@ -79,7 +94,7 @@ export class Clope {
         // if (phaseState.isMoved) {
         //     console.log("Started end phase2");
         //     phaseState.isMoved = false;
-        //     return await this.processSecondPhaseAsync()
+        //     return await this.IterateAsync()
         // }
         // else {
         //     this.cleanClusters()
@@ -88,7 +103,7 @@ export class Clope {
     }
 
     private cleanClusters() {
-        var i = 0;
+        let i = 0;
         while (i < this.clusters.length) {
             if (this.clusters[i].NumberTransactions == 0)        //Если нашли пустой кластер
             {
@@ -103,20 +118,20 @@ export class Clope {
         }
     }
 
-    execute(): Promise<ICluster[]> {
+    execute(): Promise<ICluster<ITransaction>[]> {
         console.time("prepare " + this.mathSupport.Repulsion.toString());
-        return this.transactionDataSource.FullFillObjectsTable()
+        return this.repository.FullFillObjectsTable()
             .then(() => {
                 console.timeEnd("prepare " + this.mathSupport.Repulsion.toString());
                 console.time("clope " + this.mathSupport.Repulsion.toString());
             })
-            .then(this.processFirstPhaseAsync.bind(this))
-            .then(this.processSecondPhaseAsync.bind(this))
+            .then(this.InitializeAsync.bind(this))
+            .then(this.IterateAsync.bind(this))
             .then((() => this.clusters));
     }
 
     Profit(transaction: ITransaction, iCurrentCluster?: number) {
-        //FIXME: посмотреть вариант оптимизировать, чтобы не бегать по всему кластерлисту
+        //TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
         if (!iCurrentCluster) iCurrentCluster = -1;
         let maxProfit: number;
         let iMaxProfitCluster: number;

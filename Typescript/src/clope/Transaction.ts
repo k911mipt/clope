@@ -1,13 +1,17 @@
 export interface ITransaction {
-    readonly elementKeys: Array<number>;
+    //readonly elementKeys: Array<number>;
     elementKeyCount: number;    //Количество объектов
-    AddElementKey(idObject: number): void
-    getElement(num: number): number;
+    AddElementKey(idObject?: number, status?: boolean): void
+    getElementKey(num: number): number;
+}
+export interface ITransactionWithMissedClusters extends ITransaction {
+
+    getElementKeyStatus(num: number): boolean;
 }
 export class Transaction implements ITransaction {
-    public readonly elementKeys: Array<number>;  //список id объектов
+    protected readonly elementKeys: Array<number>;  //список id объектов
     public elementKeyCount: number; //Количество объектов
-    public getElement = (num: number) => this.elementKeys[num];
+    public getElementKey = (num: number) => this.elementKeys[num];
     constructor(capacity: number) {
         this.elementKeys = new Array<number>(capacity);
         this.elementKeyCount = 0;
@@ -17,6 +21,20 @@ export class Transaction implements ITransaction {
             throw new Error("Попытка добавить пустой элемент в транзакцию, проверить вызов!")
         this.elementKeys[this.elementKeyCount++] = idObject;
     }
+}
+export class TransactionWithMissedClusters extends Transaction implements ITransactionWithMissedClusters {
+    protected readonly elementKeyStatuses: Array<boolean>;  //список id объектов
+    constructor(capacity: number) {
+        super(capacity);
+        this.elementKeyStatuses = new Array<boolean>(capacity);
+    }
+    public AddElementKey(idObject?: number, status?: boolean): void {
+        if (idObject == null || status == null)
+            throw new Error("Попытка добавить пустой элемент в транзакцию, проверить вызов!")
+        this.elementKeys[this.elementKeyCount] = idObject;
+        this.elementKeyStatuses[this.elementKeyCount++] = status;
+    }
+    public getElementKeyStatus = (num: number) => this.elementKeyStatuses[num];
 }
 export interface ITransactionElement {
     NumberAttribute: number;
