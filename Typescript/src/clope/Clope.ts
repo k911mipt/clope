@@ -86,7 +86,7 @@ export class Clope {
         // }
     }
 
-    private CleanClusters() {
+    private CleanClusters(): void {
         let i = 0;
         while (i < this.clusters.length) {
             if (this.clusters[i].NumberTransactions == 0)        //Если нашли пустой кластер
@@ -101,27 +101,37 @@ export class Clope {
                 i++;
         }
     }
-    Execute(): Promise<{
+    async Execute(): Promise<{
         clusters: Array<ICluster<ITransaction>>,
         tableClusters: Array<number>
     }> {
         console.time("prepare " + this.mathSupport.Repulsion.toString());
-        return this.repository.FullFillObjectsTable()
-            .then(() => {
-                console.timeEnd("prepare " + this.mathSupport.Repulsion.toString());
-                console.time("clope " + this.mathSupport.Repulsion.toString());
-            })
-            .then(this.InitializeAsync.bind(this))
-            .then(this.IterateAsync.bind(this))
-            .then(() => {
-                return {
-                    clusters: this.clusters,
-                    tableClusters: this.TableClusters
-                }
-            });
+        await this.repository.FullFillObjectsTable();
+        console.timeEnd("prepare " + this.mathSupport.Repulsion.toString());
+        console.time("clope " + this.mathSupport.Repulsion.toString());
+        await this.InitializeAsync();
+        await this.IterateAsync();
+        return {
+            clusters: this.clusters,
+            tableClusters: this.TableClusters
+        };
+        //console.time("prepare " + this.mathSupport.Repulsion.toString());
+        //return this.repository.FullFillObjectsTable()
+        //    .then(() => {
+        //        console.timeEnd("prepare " + this.mathSupport.Repulsion.toString());
+        //        console.time("clope " + this.mathSupport.Repulsion.toString());
+        //    })
+        //    .then(() => this.InitializeAsync())
+        //    .then(this.IterateAsync.bind(this))
+        //    .then(() => {
+        //        return {
+        //            clusters: this.clusters,
+        //            tableClusters: this.TableClusters
+        //        }
+        //    });
     }
 
-    Profit(transaction: ITransaction, iCurrentCluster?: number) {
+    Profit(transaction: ITransaction, iCurrentCluster?: number): number {
         //TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
         if (!iCurrentCluster) iCurrentCluster = -1;
         let maxProfit: number;

@@ -1,12 +1,15 @@
 export interface ITransaction {
-    elementKeyCount: number;    //Количество объектов
+    readonly elementKeyCount: number;    //Количество объектов
     AddElementKey(idObject?: number): void
     GetElementKey(num: number): number;
 }
 export class Transaction implements ITransaction {
     protected readonly elementKeys: Array<number>;  //список id объектов
     public elementKeyCount: number; //Количество объектов
-    public GetElementKey = (num: number) => this.elementKeys[num];
+    //public GetElementKey = (num: number) => this.elementKeys[num];
+    public GetElementKey(num: number) {
+        return this.elementKeys[num];
+    }
     constructor(capacity: number) {
         this.elementKeys = new Array<number>(capacity);
         this.elementKeyCount = 0;
@@ -18,8 +21,8 @@ export class Transaction implements ITransaction {
     }
 }
 export interface ITransactionElement {
-    NumberAttribute: number;
-    AttributeValue: any;
+    readonly NumberAttribute: number;
+    readonly AttributeValue: any;
 }
 export class TransactionElement implements ITransactionElement {
     public NumberAttribute: number;

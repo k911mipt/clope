@@ -1,10 +1,14 @@
+/// <reference path="../../node_modules/@types/node/index.d.ts" />
+
 import { IAsyncDataSource } from "./AsyncDataSource";
-import fs from "fs";
-import ReadLine from "readline";
+//import fs from "fs";
+//import ReadLine from "readline";
+var fs: any;
+var ReadLine: any;
 export class AsyncFileDataSource implements IAsyncDataSource<string> {
     isEnd: boolean;
     filePath: string;
-    fileLineReader?: ReadLine.ReadLine;
+    fileLineReader?: any;//ReadLine.ReadLine;
 
     constructor(filePath: string) {
         this.isEnd = true;
@@ -29,6 +33,6 @@ export class AsyncFileDataSource implements IAsyncDataSource<string> {
     }
     readNext(myAction: (row: string) => void): void {
         if (this.fileLineReader == null) throw Error("file is not connected")
-        this.fileLineReader.on('line', (line) => myAction(line))
+        this.fileLineReader.on('line', (line: any) => myAction(line))
     }
 }

@@ -112,7 +112,7 @@ export class Repository<TIn> implements IRepository {
             })
     }
     public ProcessRowToMap(elements: Array<any>): void {
-        const transactionElement = new TransactionElement('', 0)
+        const transactionElement = new TransactionElement('', 0);
         for (let index = 0; index < elements.length; index++) {
             const element = elements[index];
             transactionElement.AttributeValue = element;

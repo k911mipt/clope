@@ -21,7 +21,7 @@ async function main(r: number) {
     display.GroupByColumnUniqueElementsAndDisplay(0);
 }
 
-main(2.7);
+main(2.7).catch(e => console.error(e));
 //main(0.21);
 //main(1.7);
 // main(0.7);
