@@ -2,16 +2,16 @@ export interface ITransaction {
     //readonly elementKeys: Array<number>;
     elementKeyCount: number;    //Количество объектов
     AddElementKey(idObject?: number, status?: boolean): void
-    getElementKey(num: number): number;
+    GetElementKey(num: number): number;
 }
 export interface ITransactionWithMissedClusters extends ITransaction {
 
-    getElementKeyStatus(num: number): boolean;
+    GetElementKeyStatus(num: number): boolean;
 }
 export class Transaction implements ITransaction {
     protected readonly elementKeys: Array<number>;  //список id объектов
     public elementKeyCount: number; //Количество объектов
-    public getElementKey = (num: number) => this.elementKeys[num];
+    public GetElementKey = (num: number) => this.elementKeys[num];
     constructor(capacity: number) {
         this.elementKeys = new Array<number>(capacity);
         this.elementKeyCount = 0;
@@ -34,7 +34,7 @@ export class TransactionWithMissedClusters extends Transaction implements ITrans
         this.elementKeys[this.elementKeyCount] = idObject;
         this.elementKeyStatuses[this.elementKeyCount++] = status;
     }
-    public getElementKeyStatus = (num: number) => this.elementKeyStatuses[num];
+    public GetElementKeyStatus = (num: number) => this.elementKeyStatuses[num];
 }
 export interface ITransactionElement {
     NumberAttribute: number;
