@@ -1,12 +1,12 @@
 export interface ITransactionElement {
-    readonly NumberAttribute: number;
-    readonly AttributeValue: any;
+    readonly number: number;
+    readonly value: any;
 }
 export class TransactionElement implements ITransactionElement {
-    public NumberAttribute: number;
-    public AttributeValue: any;
+    public number: number;
+    public value: any;
     constructor(value: any, numberAttribute: number, uniqueNumber?: number) {
-        this.AttributeValue = value;
-        this.NumberAttribute = numberAttribute;
+        this.value = value;
+        this.number = numberAttribute;
     }
 }

@@ -28,33 +28,33 @@ export class TransactionArrayDictionary<TValue> implements ITransactionDictionar
         });
     }
     public Add(key: ITransactionElement, value: TValue): void {
-        if (key.NumberAttribute >= this.MapOfMap.length) {
-            for (let index = this.MapOfMap.length; index <= key.NumberAttribute; index++) {
+        if (key.number >= this.MapOfMap.length) {
+            for (let index = this.MapOfMap.length; index <= key.number; index++) {
                 this.MapOfMap.push(new Map<any, TValue>());
             }
         }
 
-        if (this.MapOfMap[key.NumberAttribute].has(key.AttributeValue)) {
+        if (this.MapOfMap[key.number].has(key.value)) {
             return;
         }
         this.count++;
-        this.MapOfMap[key.NumberAttribute].set(key.AttributeValue, value);
+        this.MapOfMap[key.number].set(key.value, value);
 
     }
     public ContainsKey(key: ITransactionElement): boolean {
-        if (key.NumberAttribute > this.MapOfMap.length) { return false; }
-        const MapOfElements = this.MapOfMap[key.NumberAttribute];
+        if (key.number > this.MapOfMap.length) { return false; }
+        const MapOfElements = this.MapOfMap[key.number];
         if (MapOfElements == null) { return false; }
-        return MapOfElements.has(key.AttributeValue);
+        return MapOfElements.has(key.value);
     }
     public Count(): number {
         return this.count;
     }
     public Item(key: ITransactionElement): TValue {
-        if (key.NumberAttribute > this.MapOfMap.length) { throw new Error(`key ${key} was not found`); }
-        const MapOfElements = this.MapOfMap[key.NumberAttribute];
+        if (key.number > this.MapOfMap.length) { throw new Error(`key ${key} was not found`); }
+        const MapOfElements = this.MapOfMap[key.number];
         if (MapOfElements != null) {
-            const value = MapOfElements.get(key.AttributeValue);
+            const value = MapOfElements.get(key.value);
             if (value != null) {
                 return value;
             }
@@ -62,9 +62,9 @@ export class TransactionArrayDictionary<TValue> implements ITransactionDictionar
         throw new Error(`key ${key} was not found`);
     }
     public TryGetValue(key: ITransactionElement): [boolean, TValue | undefined] {
-        const MapOfElements = this.MapOfMap[key.NumberAttribute];
+        const MapOfElements = this.MapOfMap[key.number];
         if (MapOfElements != null) {
-            const value = MapOfElements.get(key.AttributeValue);
+            const value = MapOfElements.get(key.value);
             if (value != null) {
                 return [true, value];
             }

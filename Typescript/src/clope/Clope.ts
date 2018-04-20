@@ -1,22 +1,22 @@
 import { IRepository } from "../map/Repository";
-import { Cluster, ICluster } from "./Cluster";
+import Cluster from "./Cluster";
 import MathSupport from "./MathSupport";
-import { ITransaction } from "./Transaction";
+import Transaction from "./Transaction";
 
 export class Clope {
     private repository: IRepository;
-    private clusters: ICluster[];
+    private clusters: Cluster[];
     private tableClusters: number[];
     private mathSupport: MathSupport;
 
     constructor(repository: IRepository, repulsion: number) {
         this.repository = repository;
         this.mathSupport = new MathSupport(repulsion);
-        this.clusters = new Array<ICluster>();
+        this.clusters = new Array<Cluster>();
         this.tableClusters = new Array<number>();
     }
     public async Execute(): Promise<{
-        clusters: ICluster[],
+        clusters: Cluster[],
         tableClusters: number[],
     }> {
         console.time("prepare " + this.mathSupport.Repulsion.toString());
@@ -34,9 +34,9 @@ export class Clope {
 
     private InitializationHandler() {
         let iMaxProfitCluster = 0;
-        return (transaction: ITransaction) => {
+        return (transaction: Transaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
-                this.clusters.push(new Cluster(this.repository.GetObjectsCount(), this.mathSupport));
+                this.clusters.push(new Cluster(this.repository.GetDicSize(), this.mathSupport));
             }
             iMaxProfitCluster = this.Profit(transaction);
             this.clusters[iMaxProfitCluster].AddTransaction(transaction);
@@ -46,7 +46,7 @@ export class Clope {
 
     private IteratonHandler(phaseState: { isMoved: boolean }) {
         let j = 0;
-        return (transaction: ITransaction) => {
+        return (transaction: Transaction) => {
             const iCurrentCluster = this.tableClusters[j];
             const iMaxProfitCluster = this.Profit(transaction, iCurrentCluster);
             if (iMaxProfitCluster !== iCurrentCluster) {
@@ -61,7 +61,7 @@ export class Clope {
 
     private async InitializeAsync(): Promise<void> {
         await this.repository.ReadUntilEnd(this.InitializationHandler());
-        if (this.clusters[this.clusters.length - 1].numTransactions === 0) {
+        if (this.clusters[this.clusters.length - 1].IsEmpty()) {
             this.clusters.pop();
         }
     }
@@ -83,7 +83,7 @@ export class Clope {
     private CleanClusters(): void {
         let i = 0;
         while (i < this.clusters.length) {
-            if (this.clusters[i].numTransactions === 0) {
+            if (this.clusters[i].IsEmpty()) {
                 for (let j = 0; j < this.tableClusters.length; j++) {
                     if (this.tableClusters[j] > i) { this.tableClusters[j]--; }
                 }
@@ -92,7 +92,7 @@ export class Clope {
         }
     }
 
-    private Profit(transaction: ITransaction, iCurrentCluster?: number): number {
+    private Profit(transaction: Transaction, iCurrentCluster?: number): number {
         // TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
         if (!iCurrentCluster) { iCurrentCluster = -1; }
         let maxProfit: number;

@@ -1,10 +1,5 @@
-export interface ITransaction {
-    readonly elementKeyCount: number;
-    AddElementKey(idObject: number): void;
-    GetElementKey(num: number): number;
-}
-export class Transaction implements ITransaction {
-    public elementKeyCount: number;
+export default class Transaction {
+    private elementKeyCount: number;
 
     private readonly elementKeys: number[];
 
@@ -12,9 +7,15 @@ export class Transaction implements ITransaction {
         this.elementKeys = new Array<number>(capacity);
         this.elementKeyCount = 0;
     }
+
+    public Length(): number {
+        return this.elementKeyCount;
+    }
+
     public GetElementKey(num: number) {
         return this.elementKeys[num];
     }
+
     public AddElementKey(idObject: number): void {
         if (idObject == null) {
             console.assert(idObject !== 1, "Попытка добавить пустой элемент в транзакцию, проверить вызов!");

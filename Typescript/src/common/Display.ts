@@ -1,17 +1,17 @@
-import { ICluster } from "../clope/Cluster";
-import { ITransaction } from "../clope/Transaction";
+import Cluster from "../clope/Cluster";
+import Transaction from "../clope/Transaction";
 import { ITransactionElement } from "../clope/TransactionElement";
 import { IRepository } from "../map/Repository";
 import { ITransactionDictionary } from "./TransactionDictionary";
 
 export class Display {
     private repository: IRepository;
-    private clusters: ICluster[];
+    private clusters: Cluster[];
     private tableClusters: number[];
     private classesIDs: ITransactionElement[];
     private group: Array<Map<number, number>>;
 
-    constructor(repository: IRepository, clusters: ICluster[], tableClusters: number[]) {
+    constructor(repository: IRepository, clusters: Cluster[], tableClusters: number[]) {
         this.repository = repository;
         this.clusters = clusters;
         this.tableClusters = tableClusters;
@@ -20,7 +20,7 @@ export class Display {
         this.group = new Array<Map<number, number>>(clusters.length);
         for (let index = 0; index < this.group.length; index++) {
             this.group[index] = new Map<number, number>();
-            this.classesIDs.forEach((classElement) => this.group[index].set(classElement.NumberAttribute, 0));
+            this.classesIDs.forEach((classElement) => this.group[index].set(classElement.number, 0));
         }
     }
     public async GroupByColumnUniqueElementsAndDisplay(columnNumber: number): Promise<void> {
@@ -32,7 +32,7 @@ export class Display {
 
     private TransactionHandler(columnNumber: number) {
         let index = 0;
-        return (transaction: ITransaction) => {
+        return (transaction: Transaction) => {
             const key = transaction.GetElementKey(columnNumber);
             const clusterNumber = this.tableClusters[index++];
             const val = this.group[clusterNumber].get(key);
@@ -45,7 +45,7 @@ export class Display {
         const sum = new Array<number>(this.classesIDs.length);
         let tempstr = "CLUSTER";
         for (const id of this.classesIDs) {
-            tempstr = tempstr + "\t" + id.AttributeValue;
+            tempstr = tempstr + "\t" + id.value;
         }
 
         // tslint:disable-next-line:no-console
@@ -53,7 +53,7 @@ export class Display {
         for (let i = 0; i < this.group.length; i++) {
             tempstr = (i + 1).toString();
             for (let j = 0; j < this.classesIDs.length; j++) {
-                const val = this.group[i].get(this.classesIDs[j].NumberAttribute);
+                const val = this.group[i].get(this.classesIDs[j].number);
                 if (val == null) { throw new Error("не нашёл значение при выводе"); }
                 tempstr += "\t" + val;
                 if (sum[j] == null) { sum[j] = 0; }

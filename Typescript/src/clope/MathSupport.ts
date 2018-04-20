@@ -5,10 +5,16 @@ export default class MathSupport {
         this.Repulsion = r;
         this.PrecalculatedWPowR = [];
     }
-    public GetWPowR(w: number) {
+
+    public Grad(S: number, N: number, width: number): number {
+        return S * N / this.GetWPowR(width);
+    }
+
+    private GetWPowR(w: number) {
         if (w >= this.PrecalculatedWPowR.length) { this.Prepare(w); }
         return this.PrecalculatedWPowR[w];
     }
+
     private Prepare(w: number): void {
         for (let i = this.PrecalculatedWPowR.length; i <= w; i++) {
             this.PrecalculatedWPowR.push(Math.pow(i, this.Repulsion));
