@@ -1,15 +1,15 @@
-import { ITransaction, Transaction, ITransactionElement, TransactionElement } from "../clope/Transaction";
-import { TransactionArrayDictionary, ITransactionDictionary, TransactionMapDictionary } from "../common/TransactionDictionary";
+import { timingSafeEqual } from "crypto";
+import { ITransaction, ITransactionElement, Transaction, TransactionElement } from "../clope/Transaction";
+import { ITransactionDictionary, TransactionArrayDictionary } from "../common/TransactionDictionary";
 import { IAsyncDataSource } from "../db/AsyncDataSource";
 import { IRowConverter } from "./RowConverter";
-import { timingSafeEqual } from "crypto";
 
 export interface IRepository {
     FullFillObjectsTable(): Promise<void>;
     GetObjectsCount(): number;
     ReadUntilEnd(handleTransaction: (tr: ITransaction) => void): Promise<void>;
-    UpdateSkipRules(clusterColumns?: Array<number>, missedColumns?: Array<number>): void;
-    GetClassesIDs(): Array<ITransactionElement>;
+    UpdateSkipRules(clusterColumns?: number[], missedColumns?: number[]): void;
+    GetClassesIDs(): ITransactionElement[];
 }
 
 export class Repository<TIn> implements IRepository {
@@ -18,12 +18,12 @@ export class Repository<TIn> implements IRepository {
 
     private elementMap: ITransactionDictionary<number>;
     private classesMap: ITransactionDictionary<number>;
-    private classesIDs: Array<TransactionElement>;
+    private classesIDs: TransactionElement[];
     private nullElements: Set<any>;
     private missedColumns: Set<number>;
     private clusterColumns: Set<number>;
 
-    constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>, nullElements?: Array<any>, clusterColumns?: Array<number>, missedColumns?: Array<number>) {
+    constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>, nullElements?: Set<any>, clusterColumns?: Set<number>, missedColumns?: Set<number>) {
         this.dataSource = datasource;
         this.rowConverter = rowConverter;
 
@@ -32,9 +32,10 @@ export class Repository<TIn> implements IRepository {
         this.classesIDs = new Array<TransactionElement>();
 
         this.nullElements = new Set<any>();
-        if (nullElements != null)
+        if (nullElements != null) {
             nullElements.forEach((value) =>
                 this.nullElements.add(value));
+        }
 
         this.clusterColumns = new Set<number>();
         if (clusterColumns != null) {
@@ -48,15 +49,13 @@ export class Repository<TIn> implements IRepository {
                 this.missedColumns.add(value));
         }
     }
-    public UpdateSkipRules(clusterColumns?: Array<number>, missedColumns?: Array<number>): void {
-        this.clusterColumns.delete;
+    public UpdateSkipRules(clusterColumns?: number[], missedColumns?: number[]): void {
         this.clusterColumns = new Set<number>();
         if (clusterColumns != null) {
             clusterColumns.forEach((value) =>
                 this.clusterColumns.add(value));
         }
 
-        this.missedColumns.delete;
         this.missedColumns = new Set<number>();
         if (missedColumns != null) {
             missedColumns.forEach((value) =>
@@ -66,68 +65,67 @@ export class Repository<TIn> implements IRepository {
     public GetObjectsCount(): number {
         return this.elementMap.Count();
     }
-
-    private NeedToSkipColumn = (index: number) => this.missedColumns.has(index);
-
-    FormNewTransaction(elements: any[]): ITransaction {
-        //TODO: ПРОВЕРИТЬ НА РЕФАКТОРИНГ
-        const transaction = new Transaction(elements.length)
-        const transactionElement = new TransactionElement('', 0)
+    public FormNewTransaction(elements: any[]): ITransaction {
+        // TODO: ПРОВЕРИТЬ НА РЕФАКТОРИНГ
+        const transaction = new Transaction(elements.length);
+        const transactionElement = new TransactionElement("", 0);
         for (let index = 0; index < elements.length; index++) {
-            if (this.NeedToSkipColumn(index)) continue;
+            if (this.NeedToSkipColumn(index)) { continue; }
             const element = elements[index];
-            if (this.nullElements.has(element)) continue;
+            if (this.nullElements.has(element)) { continue; }
             transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
-            let [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
-            if (success)
-                transaction.AddElementKey(elementKey)
-            else
-                throw new Error("Элемент не найден в карте соответствий. Источник данных был изменён за время работы программы!");
+            const [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
+            if (success) {
+                transaction.AddElementKey(elementKey);
+            } else {
+                throw new Error("Element was not found in map. Check for datasource was changed");
+            }
         }
         return transaction;
     }
 
-    ReadUntilEnd(HandleTransaction: (tr: ITransaction) => void): Promise<void> {
+    public ReadUntilEnd(HandleTransaction: (tr: ITransaction) => void): Promise<void> {
         const convertAndHandle = ((row: TIn) => {
-            const elements = this.rowConverter.convert(row);
+            const elements = this.rowConverter.Convert(row);
             HandleTransaction(this.FormNewTransaction(elements));
-        }).bind(this)
+        }).bind(this);
 
         return this.dataSource.connect()
             .then(() => {
-                this.dataSource.readNext(convertAndHandle)
-                return this.dataSource.reset()
-            })
+                this.dataSource.readNext(convertAndHandle);
+                return this.dataSource.reset();
+            });
     }
 
-    FullFillObjectsTable(): Promise<void> {
+    public FullFillObjectsTable(): Promise<void> {
         return this.dataSource
             .connect()
-            .then(() => this.dataSource.readNext((row) => this.ProcessRowToMap(this.rowConverter.convert(row))))
+            .then(() => this.dataSource.readNext((row) => this.ProcessRowToMap(this.rowConverter.Convert(row))))
             .then(() => this.dataSource.reset())
-            .catch(er => {
-                console.log(er)
-                return Promise.reject(er)
-            })
+            .catch((er) => {
+                console.log(er);
+                return Promise.reject(er);
+            });
     }
-    public ProcessRowToMap(elements: Array<any>): void {
-        const transactionElement = new TransactionElement('', 0);
+    public ProcessRowToMap(elements: any[]): void {
+        const transactionElement = new TransactionElement("", 0);
         for (let index = 0; index < elements.length; index++) {
             const element = elements[index];
             transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
-            this.elementMap.Add(transactionElement, this.elementMap.Count())
+            this.elementMap.Add(transactionElement, this.elementMap.Count());
         }
     }
-    public GetClassesIDs(): Array<ITransactionElement> {
+    public GetClassesIDs(): ITransactionElement[] {
         const classesIDs = new Array<TransactionElement>();
         this.elementMap.forEach((uniqueNumber, transactionElement) => {
             if (this.clusterColumns.has(transactionElement.NumberAttribute)) {
                 this.classesMap.Add(transactionElement, uniqueNumber);
-                classesIDs.push(new TransactionElement(transactionElement.AttributeValue, uniqueNumber))
+                classesIDs.push(new TransactionElement(transactionElement.AttributeValue, uniqueNumber));
             }
-        })
+        });
         return classesIDs;
     }
+    private NeedToSkipColumn = (index: number) => this.missedColumns.has(index);
 }

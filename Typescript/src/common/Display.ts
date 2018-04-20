@@ -5,13 +5,13 @@ import { ITransactionDictionary } from "./TransactionDictionary";
 
 export class Display {
     private repository: IRepository;
-    private clusters: Array<ICluster<ITransaction>>;
+    private clusters: Array<ICluster>;
     private tableClusters: Array<number>;
     private classesIDs: Array<ITransactionElement>;
     group: Array<Map<number, number>>;
 
 
-    constructor(repository: IRepository, clusters: Array<ICluster<ITransaction>>, tableClusters: Array<number>) {
+    constructor(repository: IRepository, clusters: Array<ICluster>, tableClusters: Array<number>) {
         this.repository = repository;
         this.clusters = clusters;
         this.tableClusters = tableClusters;

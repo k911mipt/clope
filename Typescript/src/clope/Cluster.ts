@@ -1,102 +1,113 @@
-import { ITransaction } from "./Transaction";
 import MathSupport from "./MathSupport";
-export interface ICluster<T extends ITransaction> {
-    NumberTransactions: number;
+import { ITransaction } from "./Transaction";
+export interface ICluster {
+    readonly numTransactions: number;
     GetOCC(num: number): number;
-    AddTransaction(transaction: T): void;
-    DelTransaction(transaction: T): void;
-    DeltaAdd(transaction: T): number;
-    DeltaDel(transaction: T): number;
+    AddTransaction(transaction: ITransaction): void;
+    DelTransaction(transaction: ITransaction): void;
+    DeltaAdd(transaction: ITransaction): number;
+    DeltaDel(transaction: ITransaction): number;
 }
 
-export class Cluster<T extends ITransaction> implements ICluster<T> {
-    protected width: number;  //Ширина кластера
-    protected square: number; //Площадь кластера
-    protected occ: { [key: number]: number; }; //Array<number>;     //Таблица количества объектов по номерам в кластере
-    public NumberTransactions: number;
+export class Cluster implements ICluster {
+    public numTransactions: number;
+
+    private width: number;  // Ширина кластера
+    private square: number; // Площадь кластера
+    private occ: { [key: number]: number; };     // Таблица количества объектов по номерам в кластере
     private mathSupport: MathSupport;
 
-    //public GetOCC = (num: number) => this.occ[num];
-    public GetOCC(num: number) { return this.occ[num]; }
-
-    /**
-     *
-     */
     constructor(capacity: number, mathSupport: MathSupport) {
         this.mathSupport = mathSupport;
-        this.occ = new Array<number>(capacity);
-        //this.occ = {};
-        //for (let i = 0; i < this.occ.length; i++) {
-        //    this.occ[i] = 0;
-        //}
+        // this.occ = new Array<number>(capacity);
+        // this.occ = {};
+        this.occ = [];
+
+        // Без предварительной инициализации в 1.5 раза медленнее
+        for (let i = 0; i < capacity; i++) {
+            this.occ[i] = 0;
+        }
 
         this.width = 0;
         this.square = 0;
-        this.NumberTransactions = 0;
+        this.numTransactions = 0;
+    }
+    public GetOCC(num: number) {
+        return this.occ[num];
     }
 
-    protected IsElementDeterminative(transaction: T, index: number, threshold: number): boolean {
-        const elementKey = transaction.GetElementKey(index);
-        return (this.occ[elementKey] == threshold)
-    }
-
-    public AddTransaction(transaction: T): void {
+    public AddTransaction(transaction: ITransaction): void {
         this.square += transaction.elementKeyCount;
-        this.NumberTransactions++;
+        this.numTransactions++;
         for (let i = 0; i < transaction.elementKeyCount; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0))
+            if (this.IsElementDeterminative(transaction, i, 0)) {
                 this.width++;
-            let key = transaction.GetElementKey(i);
-            //this.occ[key]++;
-            this.occ[key] = (this.occ[key] | 0) + 1;
+            }
+            const key = transaction.GetElementKey(i);
+            this.occ[key]++;
+            // C такой реализацией в 1.5 раза медленнее
+            // this.occ[key] = (this.occ[key] | 0) + 1;
         }
     }
 
-    public DelTransaction(transaction: T): void {
+    public DelTransaction(transaction: ITransaction): void {
         this.square -= transaction.elementKeyCount;
-        this.NumberTransactions--;
+        this.numTransactions--;
         for (let i = 0; i < transaction.elementKeyCount; i++) {
-            let key = transaction.GetElementKey(i);
-            //console.assert(this.occ[key] > 0);
+            const key = transaction.GetElementKey(i);
+            // console.assert(this.occ[key] > 0);
             this.occ[key]--;
-            if (this.IsElementDeterminative(transaction, i, 0))
+            if (this.IsElementDeterminative(transaction, i, 0)) {
                 this.width--;
+            }
         }
     }
 
-    public DeltaAdd(transaction: T): number {
+    public DeltaAdd(transaction: ITransaction): number {
         const S_new = this.square + transaction.elementKeyCount;
         let W_new = this.width;
 
-        //TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
+        // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
-        for (let i = 0; i < transaction.elementKeyCount; i++)
-            if (this.IsElementDeterminative(transaction, i, 0))
+        for (let i = 0; i < transaction.elementKeyCount; i++) {
+            if (this.IsElementDeterminative(transaction, i, 0)) {
                 W_new++;
-        if (this.NumberTransactions > 0)
-            return this.Grad(S_new, this.NumberTransactions + 1, W_new) - this.Grad(this.square, this.NumberTransactions, this.width);
-        return this.Grad(S_new, this.NumberTransactions + 1, W_new);
+            }
+        }
+        if (this.numTransactions > 0) {
+            return this.Grad(S_new, this.numTransactions + 1, W_new)
+                - this.Grad(this.square, this.numTransactions, this.width);
+        }
+        return this.Grad(S_new, this.numTransactions + 1, W_new);
 
     }
-    public DeltaDel(transaction: T): number {
-        let S_new = this.square - transaction.elementKeyCount;
-        let W_new = this.width;
-        console.assert(this.NumberTransactions >= 1);
-        //if (this.NumberTransactions < 1)
-        //    throw Error("Попытка удаления транзакции из пустого кластера, проверьте исходный код класса Clope!")
-        //TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
+    public DeltaDel(transaction: ITransaction): number {
+        const sNew = this.square - transaction.elementKeyCount;
+        let wNew = this.width;
+        // tslint:disable-next-line:max-line-length
+        console.assert(this.numTransactions >= 1, "Попытка удаления транзакции из пустого кластера, проверьте исходный код класса Clope!");
+        // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
-        for (let i = 0; i < transaction.elementKeyCount; i++)
-            if (this.IsElementDeterminative(transaction, i, 1))
-                W_new--;
-        if (this.NumberTransactions == 1) {
-            console.assert(W_new == 0);
-            //if (W_new != 0) throw Error("Чертовщина, разбирайся в алгоритме. Удаляет вроде как последнюю транзакцию из кластера, но она не удаляется");
-            return this.Grad(this.square, this.NumberTransactions, this.width) - this.Grad(S_new, this.NumberTransactions - 1, W_new);
+        for (let i = 0; i < transaction.elementKeyCount; i++) {
+            if (this.IsElementDeterminative(transaction, i, 1)) {
+                wNew--;
+            }
         }
-        return this.Grad(this.square, this.NumberTransactions, this.width);
+        if (this.numTransactions === 1) {
+            console.assert(wNew === 0);
+            // if (W_new != 0) throw Error("Algo incorrect. w_new must be 0 when only 1 transaction left");
+            return this.Grad(this.square, this.numTransactions, this.width)
+                - this.Grad(sNew, this.numTransactions - 1, wNew);
+        }
+        return this.Grad(this.square, this.numTransactions, this.width);
     }
-    protected Grad(S: number, N: number, width: number): number {
+    private Grad(S: number, N: number, width: number): number {
         return S * N / this.mathSupport.GetWPowR(width);
+    }
+    private IsElementDeterminative(transaction: ITransaction, index: number, threshold: number): boolean {
+        const elementKey = transaction.GetElementKey(index);
+        return (this.occ[elementKey] === threshold);
+        // C такой реализацией в 1.5 раза медленнее
+        // return ((this.occ[elementKey] | 0) == threshold)
     }
 }

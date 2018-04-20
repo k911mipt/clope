@@ -1,30 +1,19 @@
 import { timingSafeEqual } from "crypto";
 
 export interface IRowConverter<TRow> {
-    convert(row: TRow): Array<any>
-}
-abstract class RowConverter<TRow> implements IRowConverter<TRow>{
-    public abstract convert(row: TRow): Array<any>;
+    Convert(row: TRow): any[];
 }
 
-export class RowConverterStringSplit extends RowConverter<string>{
-    separator: string | RegExp;
-    limit?: number;
-    convert(row: string): Array<any> {
-        return row.split(this.separator, this.limit)
-    }
+export class RowConverterStringSplit implements IRowConverter<string> {
+    private separator: string | RegExp;
+    private limit?: number;
 
     constructor(separator: string | RegExp, limit?: number) {
-        super();
         this.separator = separator;
         this.limit = limit;
     }
+    public Convert(row: string): any[] {
+        return row.split(this.separator, this.limit);
+    }
 
 }
-
-
-function rowmapper(separator: string | RegExp, limit?: number) {
-    return (line: string) => line.split(separator, limit)
-}
-
-
