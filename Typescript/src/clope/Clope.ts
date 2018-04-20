@@ -81,8 +81,6 @@ export class Clope {
     }
 
     private CleanClusters(): void {
-        // FIXME: tslint
-        // abccomment
         let i = 0;
         while (i < this.clusters.length) {
             if (this.clusters[i].numTransactions === 0) {

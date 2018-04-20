@@ -64,21 +64,21 @@ export class Cluster implements ICluster {
     }
 
     public DeltaAdd(transaction: ITransaction): number {
-        const S_new = this.square + transaction.elementKeyCount;
-        let W_new = this.width;
+        const sNew = this.square + transaction.elementKeyCount;
+        let wNew = this.width;
 
         // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
         for (let i = 0; i < transaction.elementKeyCount; i++) {
             if (this.IsElementDeterminative(transaction, i, 0)) {
-                W_new++;
+                wNew++;
             }
         }
         if (this.numTransactions > 0) {
-            return this.Grad(S_new, this.numTransactions + 1, W_new)
+            return this.Grad(sNew, this.numTransactions + 1, wNew)
                 - this.Grad(this.square, this.numTransactions, this.width);
         }
-        return this.Grad(S_new, this.numTransactions + 1, W_new);
+        return this.Grad(sNew, this.numTransactions + 1, wNew);
 
     }
     public DeltaDel(transaction: ITransaction): number {

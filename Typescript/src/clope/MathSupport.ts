@@ -11,7 +11,7 @@ export default class MathSupport {
     }
     private Prepare(w: number): void {
         for (let i = this.PrecalculatedWPowR.length; i <= w; i++) {
-            this.PrecalculatedWPowR.push(Math.pow(i, this.Repulsion))
+            this.PrecalculatedWPowR.push(Math.pow(i, this.Repulsion));
         }
     }
 }

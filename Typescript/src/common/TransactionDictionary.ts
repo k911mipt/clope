@@ -1,4 +1,4 @@
-import { ITransactionElement, TransactionElement } from "../clope/Transaction";
+import { ITransactionElement, TransactionElement } from "../clope/TransactionElement";
 // К сожалению, TS не умеет в override equals,
 // а код вида
 // let a=new TransactionElement("abc",5);

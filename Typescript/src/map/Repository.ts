@@ -1,72 +1,75 @@
 import { timingSafeEqual } from "crypto";
-import { ITransaction, ITransactionElement, Transaction, TransactionElement } from "../clope/Transaction";
+import { ITransaction, Transaction} from "../clope/Transaction";
+import { ITransactionElement, TransactionElement } from "../clope/TransactionElement";
 import { ITransactionDictionary, TransactionArrayDictionary } from "../common/TransactionDictionary";
-import { IAsyncDataSource } from "../db/AsyncDataSource";
+import { IDataSourceAsync } from "../db/DataSourceAsync";
 import { IRowConverter } from "./RowConverter";
 
 export interface IRepository {
     FullFillObjectsTable(): Promise<void>;
     GetObjectsCount(): number;
     ReadUntilEnd(handleTransaction: (tr: ITransaction) => void): Promise<void>;
-    UpdateSkipRules(clusterColumns?: number[], missedColumns?: number[]): void;
+    UpdateRules(clusterColumns?: number[], missedColumns?: number[]): void;
     GetClassesIDs(): ITransactionElement[];
 }
 
 export class Repository<TIn> implements IRepository {
-    private dataSource: IAsyncDataSource<TIn>;
+    private dataSource: IDataSourceAsync<TIn>;
     private rowConverter: IRowConverter<TIn>;
 
     private elementMap: ITransactionDictionary<number>;
     private classesMap: ITransactionDictionary<number>;
-    private classesIDs: TransactionElement[];
+    private classesIDs: ITransactionElement[];
     private nullElements: Set<any>;
     private missedColumns: Set<number>;
     private clusterColumns: Set<number>;
 
-    constructor(datasource: IAsyncDataSource<TIn>, rowConverter: IRowConverter<TIn>, nullElements?: Set<any>, clusterColumns?: Set<number>, missedColumns?: Set<number>) {
+    constructor(datasource: IDataSourceAsync<TIn>,
+                rowConverter: IRowConverter<TIn>,
+                nullElements?: Set<any>,
+                clusterColumns?: Set<number>,
+                missedColumns?: Set<number>) {
         this.dataSource = datasource;
         this.rowConverter = rowConverter;
 
         this.elementMap = new TransactionArrayDictionary<number>();
         this.classesMap = new TransactionArrayDictionary<number>();
-        this.classesIDs = new Array<TransactionElement>();
+        // this.classesIDs = new[ Array<ITransactionElement>();
+        this.classesIDs = [];
 
         this.nullElements = new Set<any>();
         if (nullElements != null) {
-            nullElements.forEach((value) =>
-                this.nullElements.add(value));
+            nullElements.forEach((value) => this.nullElements.add(value));
         }
 
         this.clusterColumns = new Set<number>();
         if (clusterColumns != null) {
-            clusterColumns.forEach((value) =>
-                this.clusterColumns.add(value));
+            clusterColumns.forEach((value) =>  this.clusterColumns.add(value));
         }
 
         this.missedColumns = new Set<number>();
         if (missedColumns != null) {
-            missedColumns.forEach((value) =>
-                this.missedColumns.add(value));
+            missedColumns.forEach((value) => this.missedColumns.add(value));
         }
     }
-    public UpdateSkipRules(clusterColumns?: number[], missedColumns?: number[]): void {
+
+    public UpdateRules(clusterColumns?: number[], missedColumns?: number[]): void {
         this.clusterColumns = new Set<number>();
         if (clusterColumns != null) {
-            clusterColumns.forEach((value) =>
-                this.clusterColumns.add(value));
+            clusterColumns.forEach((value) => this.clusterColumns.add(value));
         }
 
         this.missedColumns = new Set<number>();
         if (missedColumns != null) {
-            missedColumns.forEach((value) =>
-                this.missedColumns.add(value));
+            missedColumns.forEach((value) => this.missedColumns.add(value));
         }
     }
+
     public GetObjectsCount(): number {
         return this.elementMap.Count();
     }
+
     public FormNewTransaction(elements: any[]): ITransaction {
-        // TODO: ПРОВЕРИТЬ НА РЕФАКТОРИНГ
         const transaction = new Transaction(elements.length);
         const transactionElement = new TransactionElement("", 0);
         for (let index = 0; index < elements.length; index++) {
@@ -76,7 +79,7 @@ export class Repository<TIn> implements IRepository {
             transactionElement.AttributeValue = element;
             transactionElement.NumberAttribute = index;
             const [success, elementKey] = this.elementMap.TryGetValue(transactionElement);
-            if (success) {
+            if (success && (elementKey != null)) {
                 transaction.AddElementKey(elementKey);
             } else {
                 throw new Error("Element was not found in map. Check for datasource was changed");
@@ -85,29 +88,28 @@ export class Repository<TIn> implements IRepository {
         return transaction;
     }
 
-    public ReadUntilEnd(HandleTransaction: (tr: ITransaction) => void): Promise<void> {
-        const convertAndHandle = ((row: TIn) => {
-            const elements = this.rowConverter.Convert(row);
-            HandleTransaction(this.FormNewTransaction(elements));
-        }).bind(this);
-
-        return this.dataSource.connect()
-            .then(() => {
-                this.dataSource.readNext(convertAndHandle);
-                return this.dataSource.reset();
-            });
+    public async ReadUntilEnd(HandleTransaction: (tr: ITransaction) => void): Promise<void> {
+        await this.dataSource.Connect();
+        await this.dataSource.ReadNext((row: TIn) => {
+            HandleTransaction(this.FormNewTransaction(this.rowConverter.Convert(row)));
+        });
+        await this.dataSource.Reset()
+                             .catch((er) => {
+                                 console.log(er);
+                                 return Promise.reject(er);
+                             });
     }
 
-    public FullFillObjectsTable(): Promise<void> {
-        return this.dataSource
-            .connect()
-            .then(() => this.dataSource.readNext((row) => this.ProcessRowToMap(this.rowConverter.Convert(row))))
-            .then(() => this.dataSource.reset())
-            .catch((er) => {
-                console.log(er);
-                return Promise.reject(er);
-            });
+    public async FullFillObjectsTable(): Promise<void> {
+        await this.dataSource.Connect();
+        await this.dataSource.ReadNext((row) => this.ProcessRowToMap(this.rowConverter.Convert(row)));
+        await this.dataSource.Reset()
+                             .catch((er) => {
+                                 console.log(er);
+                                 return Promise.reject(er);
+                             });
     }
+
     public ProcessRowToMap(elements: any[]): void {
         const transactionElement = new TransactionElement("", 0);
         for (let index = 0; index < elements.length; index++) {
@@ -117,6 +119,7 @@ export class Repository<TIn> implements IRepository {
             this.elementMap.Add(transactionElement, this.elementMap.Count());
         }
     }
+
     public GetClassesIDs(): ITransactionElement[] {
         const classesIDs = new Array<TransactionElement>();
         this.elementMap.forEach((uniqueNumber, transactionElement) => {
@@ -127,5 +130,8 @@ export class Repository<TIn> implements IRepository {
         });
         return classesIDs;
     }
-    private NeedToSkipColumn = (index: number) => this.missedColumns.has(index);
+
+    private NeedToSkipColumn(index: number) {
+        return this.missedColumns.has(index);
+    }
 }
