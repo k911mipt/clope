@@ -1,8 +1,8 @@
 import Clope from "./clope/Clope";
 import { Display } from "./common/Display";
 import { FileDataSource } from "./db/DataSource";
-import RuleSet from "./map/RuleSet";
-import { TransactionStore } from "./map/TransactionStore";
+import RuleSet from "./clope/RuleSet";
+import { TransactionStore } from "./clope/TransactionStore";
 
 async function main(repulsion: number) {
     const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data");

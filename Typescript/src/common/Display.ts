@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from "util";
 import Cluster from "../clope/Cluster";
 import Transaction from "../clope/Transaction";
-import { ITransactionStore } from "../map/TransactionStore";
+import { ITransactionStore } from "../clope/TransactionStore";
 
 export class Display {
     private dataSource: ITransactionStore;

@@ -1,4 +1,4 @@
-import { ITransactionStore } from "../map/TransactionStore";
+import { ITransactionStore } from "./TransactionStore";
 import Cluster from "./Cluster";
 import MathCache from "./MathCache";
 import Transaction from "./Transaction";

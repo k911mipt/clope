@@ -1,6 +1,6 @@
-import Transaction from "../clope/Transaction";
 import { IDataSource } from "../db/DataSource";
 import RuleSet from "./RuleSet";
+import Transaction from "./Transaction";
 
 type UID = number;
 type ColumnNumber = number;
