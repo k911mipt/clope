@@ -86,9 +86,9 @@ export class TransactionStore<T> implements ITransactionStore  {
 
             const map = this.elementMap.get(index);
             if (map != null) {
-                const value = map.get(element);
-                if (value != null) {
-                    transaction.AddElementKey(value);
+                const uid = map.get(element);
+                if (uid != null) {
+                    transaction.AddElementKey(uid);
                 } else {
                     throw new Error("Element was not found in map");
                 }
