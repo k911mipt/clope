@@ -3,16 +3,11 @@ import Cluster from "./Cluster";
 import MathCache from "./MathCache";
 import Transaction from "./Transaction";
 
-type Profit = number;
-
 export default class Clope<T> {
     private readonly dataSource: ITransactionStore;
     private readonly mathCache: MathCache;
-
-    // tslint:disable-next-line:member-ordering
-    public clusters: Cluster[]; // private profitCluster Map<profit, Cluster>
-    // private readonly clusters: Cluster[]; // private profitCluster Map<profit, Cluster>
-    private readonly tableClusters: number[]; // private clusterRowMap: Map<RowNumber, Cluster>;
+    private clusters: Cluster[];
+    private readonly tableClusters: number[];
 
     constructor(dataSource: ITransactionStore, repulsion: number) {
         this.dataSource = dataSource;
@@ -21,14 +16,12 @@ export default class Clope<T> {
         this.mathCache = new MathCache(repulsion);
     }
 
-    public async Run() {
-        await this.dataSource.InitStore();
+    public async Run(): Promise<number[]> {
         await this.Initialize();
         await this.Iterate();
 
         this.CleanClusters();
-        console.log(this.clusters);
-        return this.clusters;
+        return this.tableClusters;
     }
 
     private async Initialize() {
@@ -38,11 +31,11 @@ export default class Clope<T> {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(this.CreateCluster());
             }
-            iMaxProfitCluster = this.calcProfit(transaction);
+            iMaxProfitCluster = this.CalcProfit(transaction);
             this.clusters[iMaxProfitCluster].Add(transaction);
             this.tableClusters.push(iMaxProfitCluster);
         });
-        if (this.clusters[this.clusters.length - 1].IsEmpty()) {
+        if (this.clusters[this.clusters.length - 1].isEmpty) {
             this.clusters.pop();
         }
     }
@@ -60,7 +53,7 @@ export default class Clope<T> {
             await this.dataSource.ReadAll((transaction: Transaction) => {
 
                 const iCurrentCluster = this.tableClusters[rowIndex];
-                const iMaxProfitCluster = this.calcProfit(transaction, iCurrentCluster);
+                const iMaxProfitCluster = this.CalcProfit(transaction, iCurrentCluster);
                 if (iMaxProfitCluster !== iCurrentCluster) {
                     this.clusters[iCurrentCluster].Delete(transaction);
                     this.clusters[iMaxProfitCluster].Add(transaction);
@@ -69,13 +62,13 @@ export default class Clope<T> {
                 }
                 rowIndex++;
             });
-        } while (!isMoved);
+        } while (isMoved);
     }
 
     private CleanClusters(): void {
         let i = 0;
         while (i < this.clusters.length) {
-            if (this.clusters[i].IsEmpty()) {
+            if (this.clusters[i].isEmpty) {
                 for (let j = 0; j < this.tableClusters.length; j++) {
                     if (this.tableClusters[j] > i) { this.tableClusters[j]--; }
                 }
@@ -84,7 +77,7 @@ export default class Clope<T> {
         }
     }
 
-    private calcProfit(transaction: Transaction, iCurrentCluster?: number): number {
+    private CalcProfit(transaction: Transaction, iCurrentCluster?: number): number {
         // TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
         if (!iCurrentCluster) { iCurrentCluster = -1; }
         let maxProfit: number;

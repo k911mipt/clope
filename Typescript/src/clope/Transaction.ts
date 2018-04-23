@@ -1,5 +1,4 @@
 export default class Transaction {
-    [index: number]: number;
     private elementKeyCount: number;
 
     private readonly elementKeys: number[];

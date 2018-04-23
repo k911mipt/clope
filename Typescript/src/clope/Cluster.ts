@@ -22,7 +22,7 @@ export default class Cluster {
         this.numTransactions = 0;
     }
 
-    public IsEmpty(): boolean {
+    get isEmpty(): boolean {
         return (this.numTransactions === 0);
     }
 
@@ -32,7 +32,6 @@ export default class Cluster {
         for (let i = 0; i < transaction.size; i++) {
             if (this.IsElementDeterminative(transaction, i, 0)) { this.width++; }
             const key = transaction.GetElementKey(i);
-            // tslint:disable-next-line:no-bitwise
             this.occ[key] = (this.occ[key] | 0) + 1;
         }
     }
@@ -42,7 +41,6 @@ export default class Cluster {
         this.numTransactions--;
         for (let i = 0; i < transaction.size; i++) {
             const key = transaction.GetElementKey(i);
-            // console.assert(this.occ[key] > 0);
             this.occ[key]--;
             if (this.IsElementDeterminative(transaction, i, 0)) { this.width--; }
         }
@@ -68,15 +66,14 @@ export default class Cluster {
     public CountDeltaDelete(transaction: Transaction): number {
         const sNew = this.square - transaction.size;
         let wNew = this.width;
-        // tslint:disable-next-line:max-line-length
-        console.assert(this.numTransactions >= 1, "Попытка удаления транзакции из пустого кластера, проверьте исходный код класса Clope!");
+        console.assert(this.numTransactions >= 1, "Tried to count Delta of deletion from empty cluster!");
         // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
         for (let i = 0; i < transaction.size; i++) {
             if (this.IsElementDeterminative(transaction, i, 1)) { wNew--; }
         }
         if (this.numTransactions === 1) {
-            console.assert(wNew === 0, "Algo incorrect. w_new must be 0 when only 1 transaction left");
+            console.assert(wNew === 0, "wNew must be 0 when only 1 transaction left");
             return this.mathCache.Grad(this.square, this.numTransactions, this.width)
                 - this.mathCache.Grad(sNew, this.numTransactions - 1, wNew);
         }

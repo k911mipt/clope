@@ -1,29 +1,34 @@
 import Clope from "./clope/Clope";
+import { Display } from "./common/Display";
 import { FileDataSource } from "./db/DataSource";
 import RuleSet from "./map/RuleSet";
 import { TransactionStore } from "./map/TransactionStore";
 
-async function AlgoRun(r: number) {
+async function main(repulsion: number) {
     const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data");
-
     const ruleSet = new RuleSet<string>({
-        convertFunc: (row: string) => row.split(","),
+        ConvertFunc: (row: string) => row.split(","),
         indexToSkip: [0],
         nullElements: ["?"],
     });
-
     const transactionStore = new TransactionStore<string>(fileSource, ruleSet);
+    const clope = new Clope<string>(transactionStore, repulsion);
 
-    const clope = new Clope<string>(transactionStore, r);
-
-    return clope.Run();
-}
-
-async function main() {
+    console.time("init");
+    await transactionStore.InitStore();
+    console.timeEnd("init");
     console.time("clope");
-    await AlgoRun(2.7);
-    // console.log()
+    const tableClusters = await clope.Run();
     console.timeEnd("clope");
+
+    // Display grouped
+    ruleSet.Update({
+        ConvertFunc: (row: string) => row.split(","),
+        indexToSkip: [],
+        nullElements: ["?"],
+    });
+    const display = new Display(0, transactionStore, tableClusters);
+    await display.Out();
 }
 
-main();
+main(2.7);

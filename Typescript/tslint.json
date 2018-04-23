@@ -7,7 +7,8 @@
     ],
     "jsRules": {},
     "rules": {
-        "no-console": [false, "log", "error"]
+        "no-console": [false, "log", "error"],
+        "no-bitwise": false
     },
     "rulesDirectory": []
 }

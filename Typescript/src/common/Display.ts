@@ -1,74 +1,66 @@
-// import Cluster from "../clope/Cluster";
-// import Transaction from "../clope/Transaction";
-// import { ITransactionElement } from "../clope/TransactionElement";
-// import { IRepository } from "../map/TransactionStore";
-// import { ITransactionDictionary } from "./TransactionDictionary";
+import { isNullOrUndefined } from "util";
+import Cluster from "../clope/Cluster";
+import Transaction from "../clope/Transaction";
+import { ITransactionStore } from "../map/TransactionStore";
 
-// export class Display {
-//     private repository: IRepository;
-//     private clusters: Cluster[];
-//     private tableClusters: number[];
-//     private classesIDs: ITransactionElement[];
-//     private group: Array<Map<number, number>>;
+export class Display {
+    private dataSource: ITransactionStore;
+    private tableClusters: number[];
+    private classesIDs: Array<[any, number]>;
+    private clusterOccurences: Array<Map<number, number>>;
+    private columnNumber: number;
 
-//     constructor(repository: IRepository, clusters: Cluster[], tableClusters: number[]) {
-//         this.repository = repository;
-//         this.clusters = clusters;
-//         this.tableClusters = tableClusters;
+    constructor(columnNumber: number, dataSource: ITransactionStore, tableClusters: number[]) {
+        this.dataSource = dataSource;
+        this.tableClusters = tableClusters;
+        this.columnNumber = columnNumber;
 
-//         this.classesIDs = repository.GetClassesIDs();
-//         this.group = new Array<Map<number, number>>(clusters.length);
-//         for (let index = 0; index < this.group.length; index++) {
-//             this.group[index] = new Map<number, number>();
-//             this.classesIDs.forEach((classElement) => this.group[index].set(classElement.number, 0));
-//         }
-//     }
-//     public async GroupByColumnUniqueElementsAndDisplay(columnNumber: number): Promise<void> {
-//         this.repository.UpdateRules([columnNumber]);
-//         const handler = this.TransactionHandler(columnNumber).bind(this);
-//         await this.repository.ReadUntilEnd(handler);
-//         this.DisplayClusters();
-//     }
+        this.classesIDs = dataSource.GetClassesIDs(columnNumber);
+        this.clusterOccurences = new Array<Map<number, number>>();
+    }
 
-//     private TransactionHandler(columnNumber: number) {
-//         let index = 0;
-//         return (transaction: Transaction) => {
-//             const key = transaction.GetElementKey(columnNumber);
-//             const clusterNumber = this.tableClusters[index++];
-//             const val = this.group[clusterNumber].get(key);
-//             if (val == null) { throw Error("не нашёл значение кол-ва транзакций"); }
-//             this.group[clusterNumber].set(key, val + 1);
-//         };
-//     }
+    public async Out(): Promise<void> {
+        await this.GroupBy();
 
-//     private DisplayClusters() {
-//         const sum = new Array<number>(this.classesIDs.length);
-//         let tempstr = "CLUSTER";
-//         for (const id of this.classesIDs) {
-//             tempstr = tempstr + "\t" + id.value;
-//         }
+        const sum = new Array<number>(this.classesIDs.length);
+        let tempstr = "CLUSTER";
+        for (const id of this.classesIDs) {
+            tempstr = tempstr + "\t" + id["0"];
+        }
 
-//         // tslint:disable-next-line:no-console
-//         console.log(tempstr);
-//         for (let i = 0; i < this.group.length; i++) {
-//             tempstr = (i + 1).toString();
-//             for (let j = 0; j < this.classesIDs.length; j++) {
-//                 const val = this.group[i].get(this.classesIDs[j].number);
-//                 if (val == null) { throw new Error("не нашёл значение при выводе"); }
-//                 tempstr += "\t" + val;
-//                 if (sum[j] == null) { sum[j] = 0; }
-//                 sum[j] += val;
-//             }
-//             // tslint:disable-next-line:no-console
-//             console.log(tempstr);
-//         }
-//         // tslint:disable-next-line:no-console
-//         console.log("Total");
-//         tempstr = "";
-//         for (let j = 0; j < this.classesIDs.length; j++) {
-//             tempstr += "\t" + sum[j];
-//         }
-//         // tslint:disable-next-line:no-console
-//         console.log(tempstr);
-//     }
-// }
+        console.log(tempstr);
+        for (let i = 0; i < this.clusterOccurences.length; i++) {
+            tempstr = (i + 1).toString();
+            for (let j = 0; j < this.classesIDs.length; j++) {
+                const val = this.clusterOccurences[i].get(this.classesIDs[j]["1"]);
+                if (val == null) { throw new Error("Couldnt find value to output"); }
+                tempstr += "\t" + val;
+                if (sum[j] == null) { sum[j] = 0; }
+                sum[j] += val;
+            }
+            console.log(tempstr);
+        }
+        console.log("Total");
+        tempstr = "";
+        for (let j = 0; j < this.classesIDs.length; j++) {
+            tempstr += "\t" + sum[j];
+        }
+        console.log(tempstr);
+    }
+
+    private async GroupBy(): Promise<void> {
+        let rowNumber = 0;
+        await this.dataSource.ReadAll((transaction: Transaction) => {
+            const uid = transaction.GetElementKey(this.columnNumber);
+            const clusterNumber = this.tableClusters[rowNumber++];
+            if (clusterNumber >= this.clusterOccurences.length) {
+                for (let i = this.clusterOccurences.length; i <= clusterNumber; i++) {
+                    this.clusterOccurences[i] = new Map<number, number>();
+                    this.classesIDs.forEach((classElement) => this.clusterOccurences[i].set(classElement["1"], 0));
+                }
+            }
+            const val = this.clusterOccurences[clusterNumber].get(uid);
+            if (!isNullOrUndefined(val)) { this.clusterOccurences[clusterNumber].set(uid, val + 1); }
+        });
+    }
+}

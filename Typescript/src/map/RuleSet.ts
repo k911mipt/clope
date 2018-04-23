@@ -1,32 +1,39 @@
 export default class RuleSet<T> {
-    public convertFunc: (row: T) => any[];
-    private readonly skipElements: Set<T>;
-    private readonly indexToSkip: Set<number>;
+    private ConvertFunc: (row: T) => any[];
+    private skipElements: Set<T>;
+    private indexToSkip: Set<number>;
 
     constructor(config: {
-        convertFunc: ((row: T) => any[])
+        ConvertFunc: ((row: T) => any[])
         nullElements?: any[],
         indexToSkip?: number[],
     }) {
-        this.skipElements = this.createSet(config.nullElements);
-        this.indexToSkip = this.createSet(config.indexToSkip);
-        this.convertFunc = config.convertFunc;
+        this.skipElements = this.CreateSet(config.nullElements);
+        this.indexToSkip = this.CreateSet(config.indexToSkip);
+        this.ConvertFunc = config.ConvertFunc;
     }
 
-    public apply(row: T): any[] {
-        return this.convertFunc(row);
+    public Update(config: {
+        ConvertFunc: ((row: T) => any[])
+        nullElements?: any[],
+        indexToSkip?: number[],
+    }): void {
+        this.skipElements = this.CreateSet(config.nullElements);
+        this.indexToSkip = this.CreateSet(config.indexToSkip);
+        this.ConvertFunc = config.ConvertFunc;
     }
 
-    // FIXME: ВОЗВРАЩАЕТ НЕКОРРЕКТНЫЙ МАССИВ, ПЕРЕДЕЛАТЬ НА МАП
-    public applyWithRules(row: T): any[] {
-        const elements = this.apply(row);
+    public Apply(row: T): any[] {
+        return this.ConvertFunc(row);
+    }
+
+    public ApplyWithRules(row: T): any[] {
+        const elements = this.Apply(row);
         const filteredElements = [];
         for (let i = 0; i < elements.length; i++) {
             const element = elements[i];
-
-            if (this.skipElements.has(element) || this.indexToSkip.has(i)) {
+            if (this.indexToSkip.has(i) || this.skipElements.has(element)) {
                 filteredElements.push(null);
-                // continue;
             } else {
                 filteredElements.push(element);
             }
@@ -34,7 +41,7 @@ export default class RuleSet<T> {
         return filteredElements;
     }
 
-    private createSet<TArray>(array?: TArray[]) {
+    private CreateSet<TArray>(array?: TArray[]) {
         return array ? new Set(array) : new Set();
     }
 }

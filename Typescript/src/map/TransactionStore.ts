@@ -7,6 +7,7 @@ type ColumnNumber = number;
 export interface ITransactionStore extends IDataSource<Transaction> {
     size: number;
     InitStore(): void;
+    GetClassesIDs(columnNumber: number): Array<[any, number]>;
 }
 
 export class TransactionStore<T> implements ITransactionStore  {
@@ -29,31 +30,34 @@ export class TransactionStore<T> implements ITransactionStore  {
     }
 
     public async InitStore() {
-        await this.dataSource.ReadAll((row: T) => {
-            const elements = this.ruleSet.apply(row);
-
-            for (let index = 0; index < elements.length; index++) {
-                const element = elements[index];
-                this.AddElement(index, element);
-            }
-        });
+        try {
+            // While not EOF, read & process
+            await this.dataSource.ReadAll((row: T) => {
+                const elements = this.ruleSet.Apply(row);
+                for (let index = 0; index < elements.length; index++) {
+                    const element = elements[index];
+                    this.AddElement(index, element);
+                }
+            });
+        } catch (e) {
+            console.log("Transaction store initizlization, ", e);
+        }
     }
-    // public async InitStore() {
-    //     await this.dataSource.ReadAll(this.ProcessRow);
-    // }
-    // // FIXME: ПРИДУМАТЬ ИМЯ НЕ PROCESSROW
-    // private ProcessRow(row: T): void {
-    //     const elements = this.ruleSet.apply(row);
 
-    //     for (let index = 0; index < elements.length; index++) {
-    //         const element = elements[index];
-    //         this.AddElement(index, element);
-    //     }
-    // }
+    public GetClassesIDs(columnNumber: number): Array<[any, number]> {
+        const classesIDs = new Array<[any, number]>();
+        const map = this.elementMap.get(columnNumber);
+        if (map) {
+            map.forEach((uid, key) => {
+                classesIDs.push([key, uid]);
+            });
+        }
+        return classesIDs;
+    }
 
     public ReadAll(callback: (row: Transaction) => void): Promise<void> {
         return this.dataSource.ReadAll((row) => {
-                const elements = this.ruleSet.applyWithRules(row);
+                const elements = this.ruleSet.ApplyWithRules(row);
                 callback(this.CreateTransaction(elements));
         });
     }
@@ -69,8 +73,8 @@ export class TransactionStore<T> implements ITransactionStore  {
             return;
         }
 
-        this.mapSize++;
         map.set(key, this.mapSize);
+        this.mapSize++;
     }
 
     private CreateTransaction(elements: any[]) {
