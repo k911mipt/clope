@@ -33,6 +33,7 @@ export default class Clope<T> {
 
     private async Initialize() {
         let iMaxProfitCluster = 0;
+        // While not EOF, read&process
         await this.dataSource.ReadAll((transaction: Transaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(this.CreateCluster());
@@ -55,6 +56,7 @@ export default class Clope<T> {
         do {
             let rowIndex = 0;
             isMoved = false;
+            // While not EOF, read&process
             await this.dataSource.ReadAll((transaction: Transaction) => {
 
                 const iCurrentCluster = this.tableClusters[rowIndex];

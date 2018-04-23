@@ -30,9 +30,7 @@ export default class Cluster {
         this.square += transaction.size;
         this.numTransactions++;
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) {
-                this.width++;
-            }
+            if (this.IsElementDeterminative(transaction, i, 0)) { this.width++; }
             const key = transaction.GetElementKey(i);
             // tslint:disable-next-line:no-bitwise
             this.occ[key] = (this.occ[key] | 0) + 1;
@@ -46,9 +44,7 @@ export default class Cluster {
             const key = transaction.GetElementKey(i);
             // console.assert(this.occ[key] > 0);
             this.occ[key]--;
-            if (this.IsElementDeterminative(transaction, i, 0)) {
-                this.width--;
-            }
+            if (this.IsElementDeterminative(transaction, i, 0)) { this.width--; }
         }
     }
 
@@ -59,9 +55,7 @@ export default class Cluster {
         // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) {
-                wNew++;
-            }
+            if (this.IsElementDeterminative(transaction, i, 0)) { wNew++; }
         }
         if (this.numTransactions > 0) {
             return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew)
@@ -79,9 +73,7 @@ export default class Cluster {
         // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
         // а брать пересечение множеств транзакции и хэшсета
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 1)) {
-                wNew--;
-            }
+            if (this.IsElementDeterminative(transaction, i, 1)) { wNew--; }
         }
         if (this.numTransactions === 1) {
             console.assert(wNew === 0, "Algo incorrect. w_new must be 0 when only 1 transaction left");
