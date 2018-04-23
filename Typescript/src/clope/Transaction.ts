@@ -1,4 +1,5 @@
 export default class Transaction {
+    [index: number]: number;
     private elementKeyCount: number;
 
     private readonly elementKeys: number[];
@@ -8,18 +9,15 @@ export default class Transaction {
         this.elementKeyCount = 0;
     }
 
-    public Length(): number {
+    get size(): number {
         return this.elementKeyCount;
     }
 
-    public GetElementKey(num: number) {
+    public GetElementKey(num: number): number {
         return this.elementKeys[num];
     }
 
     public AddElementKey(idObject: number): void {
-        if (idObject == null) {
-            console.assert(idObject !== 1, "Попытка добавить пустой элемент в транзакцию, проверить вызов!");
-        }
         this.elementKeys[this.elementKeyCount++] = idObject;
     }
 }

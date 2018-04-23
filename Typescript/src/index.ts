@@ -1,38 +1,29 @@
-import { Clope } from "./clope/Clope";
-import { Display } from "./common/Display";
-import { FileDataSourceAsync } from "./db/FileDataSourceAsync";
-import { Repository } from "./map/Repository";
-import { RowConverterStringSplit } from "./map/RowConverter";
+import Clope from "./clope/Clope";
+import { FileDataSource } from "./db/DataSource";
+import RuleSet from "./map/RuleSet";
+import { TransactionStore } from "./map/TransactionStore";
 
-async function main(r: number) {
-    const fileSource = new FileDataSourceAsync("../Mushroom_DataSet/agaricus-lepiota.data");
-    const rowConverter = new RowConverterStringSplit(",");
-    const nullElements = new Set("?");
-    const clusterColumns = new Set<number>();
-    clusterColumns.add(0);
-    const missedColumns = new Set<number>();
-    missedColumns.add(0);
+async function AlgoRun(r: number) {
+    const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data");
 
-    const repo = new Repository(fileSource, rowConverter, nullElements, clusterColumns, missedColumns);
-    // const repo = new Repository(fileSource, rowConverter,['?'], [0], [1]);
-    // const repo = new Repository(fileSource, rowConverter, ['?'], [0]);
-    // const repo = new Repository(fileSource, rowConverter, ['?']);
-    // const repo = new Repository(fileSource, rowConverter, ['?']);
-    const clope = new Clope(repo, r);
+    const ruleSet = new RuleSet<string>({
+        convertFunc: (row: string) => row.split(","),
+        indexToSkip: [0],
+        nullElements: ["?"],
+    });
 
-    const result = await clope.Execute();
-    console.timeEnd("clope " + r.toString());
-    console.log("finished");
-    const display = new Display(repo, result.clusters, result.tableClusters);
-    display.GroupByColumnUniqueElementsAndDisplay(0);
+    const transactionStore = new TransactionStore<string>(fileSource, ruleSet);
+
+    const clope = new Clope<string>(transactionStore, r);
+
+    return clope.Run();
 }
-console.profile();
-main(2.7).catch((e) => console.error(e));
-console.profileEnd();
-// main(0.21);
-// main(1.7);
-// main(0.7);
-// main(4.7);
-// main(2);
 
-// console.log("test")
+async function main() {
+    console.time("clope");
+    await AlgoRun(2.7);
+    // console.log()
+    console.timeEnd("clope");
+}
+
+main();

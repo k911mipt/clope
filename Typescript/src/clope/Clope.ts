@@ -1,83 +1,73 @@
-import { IRepository } from "../map/Repository";
+import { ITransactionStore } from "../map/TransactionStore";
 import Cluster from "./Cluster";
-import MathSupport from "./MathSupport";
+import MathCache from "./MathCache";
 import Transaction from "./Transaction";
 
-export class Clope {
-    private repository: IRepository;
-    private clusters: Cluster[];
-    private tableClusters: number[];
-    private mathSupport: MathSupport;
+type Profit = number;
 
-    constructor(repository: IRepository, repulsion: number) {
-        this.repository = repository;
-        this.mathSupport = new MathSupport(repulsion);
-        this.clusters = new Array<Cluster>();
-        this.tableClusters = new Array<number>();
-    }
-    public async Execute(): Promise<{
-        clusters: Cluster[],
-        tableClusters: number[],
-    }> {
-        console.time("prepare " + this.mathSupport.Repulsion.toString());
-        await this.repository.FullFillObjectsTable();
-        console.timeEnd("prepare " + this.mathSupport.Repulsion.toString());
-        console.time("clope " + this.mathSupport.Repulsion.toString());
-        await this.InitializeAsync().catch();
-        await this.IterateAsync();
-        return {
-            clusters: this.clusters,
-            tableClusters: this.tableClusters,
-        };
+export default class Clope<T> {
+    private readonly dataSource: ITransactionStore;
+    private readonly mathCache: MathCache;
 
+    // tslint:disable-next-line:member-ordering
+    public clusters: Cluster[]; // private profitCluster Map<profit, Cluster>
+    // private readonly clusters: Cluster[]; // private profitCluster Map<profit, Cluster>
+    private readonly tableClusters: number[]; // private clusterRowMap: Map<RowNumber, Cluster>;
+
+    constructor(dataSource: ITransactionStore, repulsion: number) {
+        this.dataSource = dataSource;
+        this.clusters = [];
+        this.tableClusters = [];
+        this.mathCache = new MathCache(repulsion);
     }
 
-    private InitializationHandler() {
+    public async Run() {
+        await this.dataSource.InitStore();
+        await this.Initialize();
+        await this.Iterate();
+
+        this.CleanClusters();
+        console.log(this.clusters);
+        return this.clusters;
+    }
+
+    private async Initialize() {
         let iMaxProfitCluster = 0;
-        return (transaction: Transaction) => {
+        await this.dataSource.ReadAll((transaction: Transaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
-                this.clusters.push(new Cluster(this.repository.GetDicSize(), this.mathSupport));
+                this.clusters.push(this.CreateCluster());
             }
-            iMaxProfitCluster = this.Profit(transaction);
-            this.clusters[iMaxProfitCluster].AddTransaction(transaction);
+            iMaxProfitCluster = this.calcProfit(transaction);
+            this.clusters[iMaxProfitCluster].Add(transaction);
             this.tableClusters.push(iMaxProfitCluster);
-        };
-    }
-
-    private IteratonHandler(phaseState: { isMoved: boolean }) {
-        let j = 0;
-        return (transaction: Transaction) => {
-            const iCurrentCluster = this.tableClusters[j];
-            const iMaxProfitCluster = this.Profit(transaction, iCurrentCluster);
-            if (iMaxProfitCluster !== iCurrentCluster) {
-                this.clusters[iCurrentCluster].DelTransaction(transaction);
-                this.clusters[iMaxProfitCluster].AddTransaction(transaction);
-                this.tableClusters[j] = iMaxProfitCluster;
-                phaseState.isMoved = true;
-            }
-            j++;
-        };
-    }
-
-    private async InitializeAsync(): Promise<void> {
-        await this.repository.ReadUntilEnd(this.InitializationHandler());
+        });
         if (this.clusters[this.clusters.length - 1].IsEmpty()) {
             this.clusters.pop();
         }
     }
 
-    private async IterateAsync(): Promise<void> {
-        const phaseState = {
-            isMoved: false,
-        };
-        await this.repository.ReadUntilEnd(this.IteratonHandler(phaseState));
-        if (phaseState.isMoved) {
-            phaseState.isMoved = false;
-            return this.IterateAsync();
-        } else {
-            this.CleanClusters();
-            return Promise.resolve();
-        }
+    private CreateCluster() {
+        return new Cluster(this.dataSource.size, this.mathCache);
+    }
+
+    private async Iterate() {
+        let isMoved = true;
+        do {
+            let rowIndex = 0;
+            isMoved = false;
+            await this.dataSource.ReadAll((transaction: Transaction) => {
+
+                const iCurrentCluster = this.tableClusters[rowIndex];
+                const iMaxProfitCluster = this.calcProfit(transaction, iCurrentCluster);
+                if (iMaxProfitCluster !== iCurrentCluster) {
+                    this.clusters[iCurrentCluster].Delete(transaction);
+                    this.clusters[iMaxProfitCluster].Add(transaction);
+                    this.tableClusters[rowIndex] = iMaxProfitCluster;
+                    isMoved = true;
+                }
+                rowIndex++;
+            });
+        } while (!isMoved);
     }
 
     private CleanClusters(): void {
@@ -92,14 +82,14 @@ export class Clope {
         }
     }
 
-    private Profit(transaction: Transaction, iCurrentCluster?: number): number {
+    private calcProfit(transaction: Transaction, iCurrentCluster?: number): number {
         // TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
         if (!iCurrentCluster) { iCurrentCluster = -1; }
         let maxProfit: number;
         let iMaxProfitCluster: number;
 
         if (iCurrentCluster > 0) {
-            maxProfit = this.clusters[iCurrentCluster].DeltaDel(transaction);
+            maxProfit = this.clusters[iCurrentCluster].CountDeltaDelete(transaction);
             iMaxProfitCluster = iCurrentCluster;
         } else {
             maxProfit = 0;
@@ -109,7 +99,7 @@ export class Clope {
         for (let i = 0; i < this.clusters.length; i++) {
             const element = this.clusters[i];
             if (i === iCurrentCluster) { continue; }
-            const profit = element.DeltaAdd(transaction);
+            const profit = element.CountDeltaAdd(transaction);
             if (profit <= maxProfit) { continue; }
             iMaxProfitCluster = i;
             maxProfit = profit;
