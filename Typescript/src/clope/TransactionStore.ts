@@ -1,6 +1,5 @@
-import { ColumnNumber, IDataSource, ITransactionStore, TransactionElement, UID } from "../common/Typings";
+import { ColumnNumber, IDataSource, ITransactionStore, Transaction, TransactionElement, UID } from "../common/Typings";
 import RuleSet from "./RuleSet";
-import Transaction from "./Transaction";
 
 export default class TransactionStore<T> implements ITransactionStore  {
     private readonly ruleSet: RuleSet<T>;
@@ -40,8 +39,8 @@ export default class TransactionStore<T> implements ITransactionStore  {
         const classesIDs = new Array<[TransactionElement, UID]>();
         const map = this.elementMaps.get(columnNumber);
         if (map) {
-            map.forEach((uid, key) => {
-                classesIDs.push([key, uid]);
+            map.forEach((uid, element) => {
+                classesIDs.push([element, uid]);
             });
         }
         return classesIDs;
@@ -54,16 +53,16 @@ export default class TransactionStore<T> implements ITransactionStore  {
         });
     }
 
-    private AddElementToMaps(columnNumber: ColumnNumber, key: TransactionElement) {
+    private AddElementToMaps(columnNumber: ColumnNumber, element: TransactionElement) {
         let map = this.elementMaps.get(columnNumber);
         if (!map) {
             map = new Map<TransactionElement, UID>();
             this.elementMaps.set(columnNumber, map);
         }
-        if (map.has(key)) {
+        if (map.has(element)) {
             return;
         }
-        map.set(key, this.getNewUID());
+        map.set(element, this.getNewUID());
     }
 
     private getNewUID(): UID {
@@ -71,7 +70,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
     }
 
     private CreateTransaction(elements: TransactionElement[]) {
-        const transaction = new Transaction(elements.length);
+        const transaction = new Array<UID>();
         for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
             const element = elements[columnNumber];
             if (!element) { continue; }
@@ -88,7 +87,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
                 continue;
             }
 
-            transaction.AddElementKey(uid);
+            transaction.push(uid);
         }
         return transaction;
     }

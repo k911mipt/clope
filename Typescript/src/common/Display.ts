@@ -1,7 +1,6 @@
 import { isNullOrUndefined } from "util";
 import Cluster from "../clope/Cluster";
-import Transaction from "../clope/Transaction";
-import { ITransaction, ITransactionStore, TransactionElement, UID } from "./Typings";
+import { ITransactionStore, Transaction, TransactionElement, UID } from "./Typings";
 
 export class Display {
     private dataSource: ITransactionStore;
@@ -50,8 +49,8 @@ export class Display {
 
     private async GroupBy(): Promise<void> {
         let rowNumber = 0;
-        await this.dataSource.ReadAll((transaction: ITransaction) => {
-            const uid = transaction.GetElementUID(this.columnNumber);
+        await this.dataSource.ReadAll((transaction: Transaction) => {
+            const uid = transaction[this.columnNumber];
             const clusterNumber = this.tableClusters[rowNumber++];
             if (clusterNumber >= this.clusterOccurences.length) {
                 for (let i = this.clusterOccurences.length; i <= clusterNumber; i++) {

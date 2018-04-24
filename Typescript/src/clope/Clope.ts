@@ -1,4 +1,4 @@
-import { ITransaction, ITransactionStore } from "../common/Typings";
+import { ITransactionStore, Transaction } from "../common/Typings";
 import Cluster from "./Cluster";
 import MathCache from "./MathCache";
 
@@ -26,7 +26,7 @@ export default class Clope<T> {
     private async Initialize() {
         let iMaxProfitCluster = 0;
         // While not EOF, read&process
-        await this.dataSource.ReadAll((transaction: ITransaction) => {
+        await this.dataSource.ReadAll((transaction: Transaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(new Cluster(this.dataSource.size, this.mathCache));
             }
@@ -50,7 +50,7 @@ export default class Clope<T> {
             let rowIndex = 0;
             isClusterMoved = false;
             // While not EOF, read&process
-            await this.dataSource.ReadAll((transaction: ITransaction) => {
+            await this.dataSource.ReadAll((transaction: Transaction) => {
 
                 // Получается дешевле удалять транзакцию из кластера и считать cluster.DeltaAdd,
                 // а потом добавлять обратно в тот же кластер,
@@ -85,7 +85,7 @@ export default class Clope<T> {
         }
     }
 
-    private FindMaxProfitCluster(transaction: ITransaction): number {
+    private FindMaxProfitCluster(transaction: Transaction): number {
         let maxProfit = 0;
         let iMaxProfitCluster = 0;
 

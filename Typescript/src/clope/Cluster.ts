@@ -1,11 +1,11 @@
-import { ITransaction } from "../common/Typings";
+import { Transaction } from "../common/Typings";
 import MathCache from "./MathCache";
 
 export default class Cluster {
     private numTransactions: number;
     private width: number;
     private square: number;
-    private occ: { [key: number]: number; };     // Таблица количества объектов по номерам в кластере
+    private occ: { [uid: number]: number; };     // Таблица количества объектов по номерам в кластере
     private mathCache: MathCache;
 
     constructor(capacity: number, mathCache: MathCache) {
@@ -26,38 +26,38 @@ export default class Cluster {
         return (this.numTransactions === 0);
     }
 
-    public Add(transaction: ITransaction): void {
-        this.square += transaction.size;
+    public Add(transaction: Transaction): void {
+        this.square += transaction.length;
         this.numTransactions++;
-        for (let i = 0; i < transaction.size; i++) {
+        for (let i = 0; i < transaction.length; i++) {
             if (this.IsUIDisMissing(transaction, i)) {
                 this.width++;
             }
-            const key = transaction.GetElementUID(i);
-            this.occ[key] = (this.occ[key] | 0) + 1;
+            const uid = transaction[i];
+            this.occ[uid] = (this.occ[uid] | 0) + 1;
         }
     }
 
-    public Delete(transaction: ITransaction): void {
-        this.square -= transaction.size;
+    public Delete(transaction: Transaction): void {
+        this.square -= transaction.length;
         this.numTransactions--;
-        for (let i = 0; i < transaction.size; i++) {
-            const key = transaction.GetElementUID(i);
-            this.occ[key]--;
+        for (let i = 0; i < transaction.length; i++) {
+            const uid = transaction[i];
+            this.occ[uid]--;
             if (this.IsUIDisMissing(transaction, i)) {
                 this.width--;
             }
         }
     }
 
-    public CountDeltaAdd(transaction: ITransaction): number {
+    public CountDeltaAdd(transaction: Transaction): number {
         if (this.numTransactions === 0) {
-            return this.mathCache.Grad(transaction.size, 1, transaction.size);
+            return this.mathCache.Grad(transaction.length, 1, transaction.length);
         }
 
-        const sNew = this.square + transaction.size;
+        const sNew = this.square + transaction.length;
         let wNew = this.width;
-        for (let i = 0; i < transaction.size; i++) {
+        for (let i = 0; i < transaction.length; i++) {
             if (this.IsUIDisMissing(transaction, i)) {
                 wNew++;
             }
@@ -67,8 +67,8 @@ export default class Cluster {
                - this.mathCache.Grad(this.square, this.numTransactions, this.width);
     }
 
-    private IsUIDisMissing(transaction: ITransaction, index: number): boolean {
-        const elementKey = transaction.GetElementUID(index);
-        return (this.occ[elementKey] === 0);
+    private IsUIDisMissing(transaction: Transaction, index: number): boolean {
+        const uid = transaction[index];
+        return (this.occ[uid] === 0);
     }
 }
