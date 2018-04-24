@@ -30,7 +30,9 @@ export default class Cluster {
         this.square += transaction.size;
         this.numTransactions++;
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) { this.width++; }
+            if (this.IsElementDeterminative(transaction, i, 0)) {
+                this.width++;
+            }
             const key = transaction.GetElementUID(i);
             this.occ[key] = (this.occ[key] | 0) + 1;
         }
@@ -42,39 +44,25 @@ export default class Cluster {
         for (let i = 0; i < transaction.size; i++) {
             const key = transaction.GetElementUID(i);
             this.occ[key]--;
-            if (this.IsElementDeterminative(transaction, i, 0)) { this.width--; }
+            if (this.IsElementDeterminative(transaction, i, 0)) {
+                this.width--;
+            }
         }
     }
 
     public CountDeltaAdd(transaction: ITransaction): number {
         const sNew = this.square + transaction.size;
         let wNew = this.width;
-
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) { wNew++; }
+            if (this.IsElementDeterminative(transaction, i, 0)) {
+                wNew++;
+            }
         }
-        if (this.numTransactions > 0) {
-            return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew)
-                - this.mathCache.Grad(this.square, this.numTransactions, this.width);
+        if (this.numTransactions === 0) {
+            return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew);
         }
-        return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew);
-
-    }
-
-    public CountDeltaDelete(transaction: ITransaction): number {
-        const sNew = this.square - transaction.size;
-        let wNew = this.width;
-        console.assert(this.numTransactions >= 1, "Tried to count Delta of deletion from empty cluster!");
-
-        for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 1)) { wNew--; }
-        }
-        if (this.numTransactions === 1) {
-            console.assert(wNew === 0, "wNew must be 0 when only 1 transaction left");
-            return this.mathCache.Grad(this.square, this.numTransactions, this.width)
-                - this.mathCache.Grad(sNew, this.numTransactions - 1, wNew);
-        }
-        return this.mathCache.Grad(this.square, this.numTransactions, this.width);
+        return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew)
+               - this.mathCache.Grad(this.square, this.numTransactions, this.width);
     }
 
     private IsElementDeterminative(transaction: ITransaction, index: number, threshold: number): boolean {

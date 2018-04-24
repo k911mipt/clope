@@ -30,7 +30,7 @@ export default class Clope<T> {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(this.CreateCluster());
             }
-            iMaxProfitCluster = this.CalcProfit(transaction);
+            iMaxProfitCluster = this.FindMaxProfitCluster(transaction);
             this.clusters[iMaxProfitCluster].Add(transaction);
             this.tableClusters.push(iMaxProfitCluster);
         });
@@ -52,10 +52,12 @@ export default class Clope<T> {
             await this.dataSource.ReadAll((transaction: ITransaction) => {
 
                 const iCurrentCluster = this.tableClusters[rowIndex];
-                const iMaxProfitCluster = this.CalcProfit(transaction, iCurrentCluster);
+                this.clusters[iCurrentCluster].Delete(transaction);
+
+                const iMaxProfitCluster = this.FindMaxProfitCluster(transaction);
+                this.clusters[iMaxProfitCluster].Add(transaction);
+
                 if (iMaxProfitCluster !== iCurrentCluster) {
-                    this.clusters[iCurrentCluster].Delete(transaction);
-                    this.clusters[iMaxProfitCluster].Add(transaction);
                     this.tableClusters[rowIndex] = iMaxProfitCluster;
                     isMoved = true;
                 }
@@ -67,32 +69,23 @@ export default class Clope<T> {
     private CleanClusters(): void {
         let i = 0;
         while (i < this.clusters.length) {
-            if (this.clusters[i].isEmpty) {
-                for (let j = 0; j < this.tableClusters.length; j++) {
-                    if (this.tableClusters[j] > i) { this.tableClusters[j]--; }
-                }
-                this.clusters.splice(i, 1);
-            } else { i++; }
+            if (!this.clusters[i].isEmpty) {
+                i++;
+                continue;
+            }
+            for (let j = 0; j < this.tableClusters.length; j++) {
+                if (this.tableClusters[j] > i) { this.tableClusters[j]--; }
+            }
+            this.clusters.splice(i, 1);
         }
     }
 
-    private CalcProfit(transaction: ITransaction, iCurrentCluster?: number): number {
-        if (!iCurrentCluster) { iCurrentCluster = -1; }
-        let maxProfit: number;
-        let iMaxProfitCluster: number;
-
-        if (iCurrentCluster > 0) {
-            maxProfit = this.clusters[iCurrentCluster].CountDeltaDelete(transaction);
-            iMaxProfitCluster = iCurrentCluster;
-        } else {
-            maxProfit = 0;
-            iMaxProfitCluster = 0;
-        }
+    private FindMaxProfitCluster(transaction: ITransaction): number {
+        let maxProfit = 0;
+        let iMaxProfitCluster = 0;
 
         for (let i = 0; i < this.clusters.length; i++) {
-            const cluster = this.clusters[i];
-            if (i === iCurrentCluster) { continue; }
-            const profit = cluster.CountDeltaAdd(transaction);
+            const profit = this.clusters[i].CountDeltaAdd(transaction);
             if (profit <= maxProfit) { continue; }
             iMaxProfitCluster = i;
             maxProfit = profit;
