@@ -1,5 +1,5 @@
+import { ITransaction } from "../common/Typings";
 import MathCache from "./MathCache";
-import Transaction from "./transaction";
 
 export default class Cluster {
     private numTransactions: number;
@@ -26,32 +26,30 @@ export default class Cluster {
         return (this.numTransactions === 0);
     }
 
-    public Add(transaction: Transaction): void {
+    public Add(transaction: ITransaction): void {
         this.square += transaction.size;
         this.numTransactions++;
         for (let i = 0; i < transaction.size; i++) {
             if (this.IsElementDeterminative(transaction, i, 0)) { this.width++; }
-            const key = transaction.GetElementKey(i);
+            const key = transaction.GetElementUID(i);
             this.occ[key] = (this.occ[key] | 0) + 1;
         }
     }
 
-    public Delete(transaction: Transaction): void {
+    public Delete(transaction: ITransaction): void {
         this.square -= transaction.size;
         this.numTransactions--;
         for (let i = 0; i < transaction.size; i++) {
-            const key = transaction.GetElementKey(i);
+            const key = transaction.GetElementUID(i);
             this.occ[key]--;
             if (this.IsElementDeterminative(transaction, i, 0)) { this.width--; }
         }
     }
 
-    public CountDeltaAdd(transaction: Transaction): number {
+    public CountDeltaAdd(transaction: ITransaction): number {
         const sNew = this.square + transaction.size;
         let wNew = this.width;
 
-        // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
-        // а брать пересечение множеств транзакции и хэшсета
         for (let i = 0; i < transaction.size; i++) {
             if (this.IsElementDeterminative(transaction, i, 0)) { wNew++; }
         }
@@ -63,12 +61,11 @@ export default class Cluster {
 
     }
 
-    public CountDeltaDelete(transaction: Transaction): number {
+    public CountDeltaDelete(transaction: ITransaction): number {
         const sNew = this.square - transaction.size;
         let wNew = this.width;
         console.assert(this.numTransactions >= 1, "Tried to count Delta of deletion from empty cluster!");
-        // TODO: Может, добавить хэшсет для ширины кластера, и не перебирать каждый раз весь occ[i],
-        // а брать пересечение множеств транзакции и хэшсета
+
         for (let i = 0; i < transaction.size; i++) {
             if (this.IsElementDeterminative(transaction, i, 1)) { wNew--; }
         }
@@ -80,8 +77,8 @@ export default class Cluster {
         return this.mathCache.Grad(this.square, this.numTransactions, this.width);
     }
 
-    private IsElementDeterminative(transaction: Transaction, index: number, threshold: number): boolean {
-        const elementKey = transaction.GetElementKey(index);
+    private IsElementDeterminative(transaction: ITransaction, index: number, threshold: number): boolean {
+        const elementKey = transaction.GetElementUID(index);
         return (this.occ[elementKey] === threshold);
     }
 }

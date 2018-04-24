@@ -1,22 +1,23 @@
+import { UID } from "../common/Typings";
 export default class Transaction {
-    private elementKeyCount: number;
+    private elementUIDCount: number;
 
-    private readonly elementKeys: number[];
+    private readonly elementUIDs: UID[];
 
     constructor(capacity: number) {
-        this.elementKeys = new Array<number>(capacity);
-        this.elementKeyCount = 0;
+        this.elementUIDs = new Array<UID>(capacity);
+        this.elementUIDCount = 0;
     }
 
     get size(): number {
-        return this.elementKeyCount;
+        return this.elementUIDCount;
     }
 
-    public GetElementKey(num: number): number {
-        return this.elementKeys[num];
+    public GetElementUID(num: number): UID {
+        return this.elementUIDs[num];
     }
 
-    public AddElementKey(idObject: number): void {
-        this.elementKeys[this.elementKeyCount++] = idObject;
+    public AddElementKey(uid: UID): void {
+        this.elementUIDs[this.elementUIDCount++] = uid;
     }
 }

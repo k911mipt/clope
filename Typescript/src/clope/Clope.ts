@@ -1,7 +1,6 @@
-import { ITransactionStore } from "./TransactionStore";
+import { ITransaction, ITransactionStore } from "../common/Typings";
 import Cluster from "./Cluster";
 import MathCache from "./MathCache";
-import Transaction from "./Transaction";
 
 export default class Clope<T> {
     private readonly dataSource: ITransactionStore;
@@ -27,7 +26,7 @@ export default class Clope<T> {
     private async Initialize() {
         let iMaxProfitCluster = 0;
         // While not EOF, read&process
-        await this.dataSource.ReadAll((transaction: Transaction) => {
+        await this.dataSource.ReadAll((transaction: ITransaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(this.CreateCluster());
             }
@@ -50,7 +49,7 @@ export default class Clope<T> {
             let rowIndex = 0;
             isMoved = false;
             // While not EOF, read&process
-            await this.dataSource.ReadAll((transaction: Transaction) => {
+            await this.dataSource.ReadAll((transaction: ITransaction) => {
 
                 const iCurrentCluster = this.tableClusters[rowIndex];
                 const iMaxProfitCluster = this.CalcProfit(transaction, iCurrentCluster);
@@ -77,8 +76,7 @@ export default class Clope<T> {
         }
     }
 
-    private CalcProfit(transaction: Transaction, iCurrentCluster?: number): number {
-        // TODO: посмотреть может есть вариант оптимизировать, чтобы не бегать по всему кластерлисту
+    private CalcProfit(transaction: ITransaction, iCurrentCluster?: number): number {
         if (!iCurrentCluster) { iCurrentCluster = -1; }
         let maxProfit: number;
         let iMaxProfitCluster: number;
@@ -92,9 +90,9 @@ export default class Clope<T> {
         }
 
         for (let i = 0; i < this.clusters.length; i++) {
-            const element = this.clusters[i];
+            const cluster = this.clusters[i];
             if (i === iCurrentCluster) { continue; }
-            const profit = element.CountDeltaAdd(transaction);
+            const profit = cluster.CountDeltaAdd(transaction);
             if (profit <= maxProfit) { continue; }
             iMaxProfitCluster = i;
             maxProfit = profit;

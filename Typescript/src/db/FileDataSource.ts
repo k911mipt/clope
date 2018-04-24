@@ -1,12 +1,9 @@
 import fs from "fs";
 import { resolve } from "path";
 import ReadLine from "readline";
+import { IDataSource } from "../common/Typings";
 
-export interface IDataSource<T> {
-    ReadAll(callback: (row: T) => void): Promise<void>;
-}
-
-export class FileDataSource implements IDataSource<string> {
+export default class FileDataSource implements IDataSource<string> {
 
     private readonly filePath: string;
     private isClosed: boolean;

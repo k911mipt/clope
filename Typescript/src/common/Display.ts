@@ -1,13 +1,13 @@
 import { isNullOrUndefined } from "util";
 import Cluster from "../clope/Cluster";
 import Transaction from "../clope/Transaction";
-import { ITransactionStore } from "../clope/TransactionStore";
+import { ITransaction, ITransactionStore, TransactionElement, UID } from "./Typings";
 
 export class Display {
     private dataSource: ITransactionStore;
     private tableClusters: number[];
-    private classesIDs: Array<[any, number]>;
-    private clusterOccurences: Array<Map<number, number>>;
+    private classesIDs: Array<[TransactionElement, number]>;
+    private clusterOccurences: Array<Map<UID, number>>;
     private columnNumber: number;
 
     constructor(columnNumber: number, dataSource: ITransactionStore, tableClusters: number[]) {
@@ -16,7 +16,7 @@ export class Display {
         this.columnNumber = columnNumber;
 
         this.classesIDs = dataSource.GetClassesIDs(columnNumber);
-        this.clusterOccurences = new Array<Map<number, number>>();
+        this.clusterOccurences = new Array<Map<UID, number>>();
     }
 
     public async Out(): Promise<void> {
@@ -50,12 +50,12 @@ export class Display {
 
     private async GroupBy(): Promise<void> {
         let rowNumber = 0;
-        await this.dataSource.ReadAll((transaction: Transaction) => {
-            const uid = transaction.GetElementKey(this.columnNumber);
+        await this.dataSource.ReadAll((transaction: ITransaction) => {
+            const uid = transaction.GetElementUID(this.columnNumber);
             const clusterNumber = this.tableClusters[rowNumber++];
             if (clusterNumber >= this.clusterOccurences.length) {
                 for (let i = this.clusterOccurences.length; i <= clusterNumber; i++) {
-                    this.clusterOccurences[i] = new Map<number, number>();
+                    this.clusterOccurences[i] = new Map<UID, number>();
                     this.classesIDs.forEach((classElement) => this.clusterOccurences[i].set(classElement["1"], 0));
                 }
             }
