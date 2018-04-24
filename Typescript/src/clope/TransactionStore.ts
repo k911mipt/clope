@@ -6,14 +6,14 @@ export default class TransactionStore<T> implements ITransactionStore  {
     private readonly ruleSet: RuleSet<T>;
     private readonly dataSource: IDataSource<T>;
 
-    private readonly elementMap: Map<ColumnNumber, Map<TransactionElement, UID>>;
+    private readonly elementMaps: Map<ColumnNumber, Map<TransactionElement, UID>>;
     private mapSize: number;
 
     constructor(dataSource: IDataSource<T>, ruleSet: RuleSet<T>) {
         this.ruleSet = ruleSet;
         this.dataSource = dataSource;
-        this.elementMap = new Map<ColumnNumber, Map<TransactionElement, UID>>();
 
+        this.elementMaps = new Map<ColumnNumber, Map<TransactionElement, UID>>();
         this.mapSize = 0;
     }
 
@@ -28,7 +28,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
                 const elements = this.ruleSet.Apply(row);
                 for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
                     const element = elements[columnNumber];
-                    this.AddElement(columnNumber, element);
+                    this.AddElementToMaps(columnNumber, element);
                 }
             });
         } catch (e) {
@@ -38,7 +38,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
 
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {
         const classesIDs = new Array<[TransactionElement, UID]>();
-        const map = this.elementMap.get(columnNumber);
+        const map = this.elementMaps.get(columnNumber);
         if (map) {
             map.forEach((uid, key) => {
                 classesIDs.push([key, uid]);
@@ -54,17 +54,15 @@ export default class TransactionStore<T> implements ITransactionStore  {
         });
     }
 
-    private AddElement(columnNumber: ColumnNumber, key: TransactionElement) {
-        let map = this.elementMap.get(columnNumber);
-
+    private AddElementToMaps(columnNumber: ColumnNumber, key: TransactionElement) {
+        let map = this.elementMaps.get(columnNumber);
         if (!map) {
             map = new Map<TransactionElement, UID>();
-            this.elementMap.set(columnNumber, map);
+            this.elementMaps.set(columnNumber, map);
         }
         if (map.has(key)) {
             return;
         }
-
         map.set(key, this.getNewUID());
     }
 
@@ -78,14 +76,18 @@ export default class TransactionStore<T> implements ITransactionStore  {
             const element = elements[columnNumber];
             if (!element) { continue; }
 
-            const map = this.elementMap.get(columnNumber);
+            const map = this.elementMaps.get(columnNumber);
             if (map == null) {
-                throw new Error("Element was not found in map");
+                console.log("Element was not found in map, seems datasource is changed. Results will be incorrect!");
+                continue;
             }
+
             const uid = map.get(element);
             if (uid == null) {
-                throw new Error("Element was not found in map");
+                console.log("Element was not found in map, seems datasource is changed. Results will be incorrect!");
+                continue;
             }
+
             transaction.AddElementKey(uid);
         }
         return transaction;

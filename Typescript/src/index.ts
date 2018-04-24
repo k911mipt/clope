@@ -17,11 +17,12 @@ async function main(repulsion: number) {
     console.time("init");
     await transactionStore.InitStore();
     console.timeEnd("init");
+
     console.time("clope");
     const tableClusters = await clope.Run();
     console.timeEnd("clope");
 
-    // Display grouped
+    // Display grouped clusters
     ruleSet.Update({
         ConvertFunc: (row: string) => row.split(","),
         columnsToSkip: [],

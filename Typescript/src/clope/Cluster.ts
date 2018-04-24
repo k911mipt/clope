@@ -3,8 +3,8 @@ import MathCache from "./MathCache";
 
 export default class Cluster {
     private numTransactions: number;
-    private width: number;  // Ширина кластера
-    private square: number; // Площадь кластера
+    private width: number;
+    private square: number;
     private occ: { [key: number]: number; };     // Таблица количества объектов по номерам в кластере
     private mathCache: MathCache;
 
@@ -54,6 +54,7 @@ export default class Cluster {
         if (this.numTransactions === 0) {
             return this.mathCache.Grad(transaction.size, 1, transaction.size);
         }
+
         const sNew = this.square + transaction.size;
         let wNew = this.width;
         for (let i = 0; i < transaction.size; i++) {
@@ -61,6 +62,7 @@ export default class Cluster {
                 wNew++;
             }
         }
+
         return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew)
                - this.mathCache.Grad(this.square, this.numTransactions, this.width);
     }

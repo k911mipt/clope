@@ -28,12 +28,13 @@ export default class Clope<T> {
         // While not EOF, read&process
         await this.dataSource.ReadAll((transaction: ITransaction) => {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
-                this.clusters.push(this.CreateCluster());
+                this.clusters.push(new Cluster(this.dataSource.size, this.mathCache));
             }
             iMaxProfitCluster = this.FindMaxProfitCluster(transaction);
             this.clusters[iMaxProfitCluster].Add(transaction);
             this.tableClusters.push(iMaxProfitCluster);
         });
+
         if (this.clusters[this.clusters.length - 1].isEmpty) {
             this.clusters.pop();
         }
@@ -44,12 +45,17 @@ export default class Clope<T> {
     }
 
     private async Iterate() {
-        let isMoved = true;
-        do {
+        let isClusterMoved = true;
+        while (isClusterMoved) {
             let rowIndex = 0;
-            isMoved = false;
+            isClusterMoved = false;
             // While not EOF, read&process
             await this.dataSource.ReadAll((transaction: ITransaction) => {
+
+                // Получается дешевле удалять транзакцию из кластера и считать cluster.DeltaAdd,
+                // а потом добавлять обратно в тот же кластер,
+                // чем делать проверки в цикле FindMaxProfitCluster и отдельно считать cluster.DeltaDel
+                // К тому же так мы избавляемся от функции cluster.DeltaDel вообще за ненадобностью
 
                 const iCurrentCluster = this.tableClusters[rowIndex];
                 this.clusters[iCurrentCluster].Delete(transaction);
@@ -59,24 +65,23 @@ export default class Clope<T> {
 
                 if (iMaxProfitCluster !== iCurrentCluster) {
                     this.tableClusters[rowIndex] = iMaxProfitCluster;
-                    isMoved = true;
+                    isClusterMoved = true;
                 }
                 rowIndex++;
             });
-        } while (isMoved);
+        }
     }
 
     private CleanClusters(): void {
-        let i = 0;
-        while (i < this.clusters.length) {
-            if (!this.clusters[i].isEmpty) {
-                i++;
-                continue;
+        for (let i = this.clusters.length - 1 ; i >= 0; i--) {
+            if (this.clusters[i].isEmpty) {
+                for (let j = 0; j < this.tableClusters.length; j++) {
+                    if (this.tableClusters[j] > i) {
+                        this.tableClusters[j]--;
+                    }
+                }
+                this.clusters.splice(i, 1);
             }
-            for (let j = 0; j < this.tableClusters.length; j++) {
-                if (this.tableClusters[j] > i) { this.tableClusters[j]--; }
-            }
-            this.clusters.splice(i, 1);
         }
     }
 
