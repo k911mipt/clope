@@ -49,13 +49,6 @@ export default class TransactionStore<T> implements ITransactionStore  {
 
     public ReadAll(callback: (row: Transaction) => void): Promise<void> {
         return this.dataSource.ReadAll((row) => {
-                // Вариант с Map<ColumnNumber, TransactionElement> вместо массива, содержащего null элементы,
-                // оказывается медленнее на 20%. Реализация для демонстрации:
-
-                // const elements = this.ruleSet.ApplyWithRulesToMap(row);
-                // callback(this.CreateTransactionFromMap(elements));
-
-                // Нормальная реализация
                 const elements = this.ruleSet.ApplyWithRules(row);
                 callback(this.CreateTransaction(elements));
         });
@@ -95,21 +88,6 @@ export default class TransactionStore<T> implements ITransactionStore  {
             }
             transaction.AddElementKey(uid);
         }
-        return transaction;
-    }
-    private CreateTransactionFromMap(elements: Map<ColumnNumber, TransactionElement>) {
-        const transaction = new Transaction(elements.size);
-        elements.forEach((element, columnNumber) => {
-            const map = this.elementMap.get(columnNumber);
-            if (map == null) {
-                throw new Error("Element was not found in map");
-            }
-            const uid = map.get(element);
-            if (uid == null) {
-                throw new Error("Element was not found in map");
-            }
-            transaction.AddElementKey(uid);
-        });
         return transaction;
     }
 }

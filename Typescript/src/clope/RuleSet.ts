@@ -40,20 +40,6 @@ export default class RuleSet<T> {
         return filteredElements;
     }
 
-    public ApplyWithRulesToMap(row: T): Map<ColumnNumber, TransactionElement> {
-        const elements = this.Apply(row);
-        const filteredElements = new Map<ColumnNumber, TransactionElement>();
-        for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
-            const element = elements[columnNumber];
-            if (this.columnsToSkip.has(columnNumber) || this.skipElements.has(element)) {
-                continue;
-            } else {
-                filteredElements.set(columnNumber, element);
-            }
-        }
-        return filteredElements;
-    }
-
     private CreateSet<TArray>(array?: TArray[]) {
         return array ? new Set(array) : new Set();
     }
