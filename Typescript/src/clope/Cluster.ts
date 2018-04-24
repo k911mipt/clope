@@ -12,7 +12,7 @@ export default class Cluster {
         this.mathCache = mathCache;
         this.occ = [];
 
-        // Без предварительной инициализации алгоритм получается в 1.5 раза медленнее
+        // Без предварительной инициализации алгоритм получается в 2 раза медленнее
         for (let i = 0; i < capacity; i++) {
             this.occ[i] = 0;
         }
@@ -69,6 +69,6 @@ export default class Cluster {
 
     private IsUIDisMissing(transaction: Transaction, index: number): boolean {
         const uid = transaction[index];
-        return (this.occ[uid] === 0);
+        return ((this.occ[uid] | 0) === 0);
     }
 }

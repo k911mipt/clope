@@ -6,18 +6,18 @@ export default class TransactionStore<T> implements ITransactionStore  {
     private readonly dataSource: IDataSource<T>;
 
     private readonly elementMaps: Map<ColumnNumber, Map<TransactionElement, UID>>;
-    private mapSize: number;
+    private elementMapsSize: number;
 
     constructor(dataSource: IDataSource<T>, ruleSet: RuleSet<T>) {
         this.ruleSet = ruleSet;
         this.dataSource = dataSource;
 
         this.elementMaps = new Map<ColumnNumber, Map<TransactionElement, UID>>();
-        this.mapSize = 0;
+        this.elementMapsSize = 0;
     }
 
     get size(): number {
-        return this.mapSize;
+        return this.elementMapsSize;
     }
 
     public async InitStore() {
@@ -31,7 +31,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
                 }
             });
         } catch (e) {
-            console.log("Transaction store initizlization, ", e);
+            console.log("Transaction store initialization, ", e);
         }
     }
 
@@ -54,34 +54,34 @@ export default class TransactionStore<T> implements ITransactionStore  {
     }
 
     private AddElementToMaps(columnNumber: ColumnNumber, element: TransactionElement) {
-        let map = this.elementMaps.get(columnNumber);
-        if (!map) {
-            map = new Map<TransactionElement, UID>();
-            this.elementMaps.set(columnNumber, map);
+        let columnMap = this.elementMaps.get(columnNumber);
+        if (!columnMap) {
+            columnMap = new Map<TransactionElement, UID>();
+            this.elementMaps.set(columnNumber, columnMap);
         }
-        if (map.has(element)) {
+        if (columnMap.has(element)) {
             return;
         }
-        map.set(element, this.getNewUID());
+        columnMap.set(element, this.getNewUID());
     }
 
     private getNewUID(): UID {
-        return this.mapSize++;
+        return this.elementMapsSize++;
     }
 
-    private CreateTransaction(elements: TransactionElement[]) {
-        const transaction = new Array<UID>();
+    private CreateTransaction(elements: TransactionElement[]): Transaction {
+        const transaction = [];
         for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
             const element = elements[columnNumber];
             if (!element) { continue; }
 
-            const map = this.elementMaps.get(columnNumber);
-            if (map == null) {
-                console.log("Element was not found in map, seems datasource is changed. Results will be incorrect!");
+            const columnMap = this.elementMaps.get(columnNumber);
+            if (columnMap == null) {
+                console.log("Column was not found in maps, seems datasource is changed. Results will be incorrect!");
                 continue;
             }
 
-            const uid = map.get(element);
+            const uid = columnMap.get(element);
             if (uid == null) {
                 console.log("Element was not found in map, seems datasource is changed. Results will be incorrect!");
                 continue;
