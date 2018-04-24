@@ -62,10 +62,10 @@ export default class TransactionStore<T> implements ITransactionStore  {
         if (columnMap.has(element)) {
             return;
         }
-        columnMap.set(element, this.getNewUID());
+        columnMap.set(element, this.GetNewUID());
     }
 
-    private getNewUID(): UID {
+    private GetNewUID(): UID {
         return this.elementMapsSize++;
     }
 
