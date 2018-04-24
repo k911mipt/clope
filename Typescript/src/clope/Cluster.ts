@@ -30,7 +30,7 @@ export default class Cluster {
         this.square += transaction.size;
         this.numTransactions++;
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) {
+            if (this.IsUIDisMissing(transaction, i)) {
                 this.width++;
             }
             const key = transaction.GetElementUID(i);
@@ -44,29 +44,29 @@ export default class Cluster {
         for (let i = 0; i < transaction.size; i++) {
             const key = transaction.GetElementUID(i);
             this.occ[key]--;
-            if (this.IsElementDeterminative(transaction, i, 0)) {
+            if (this.IsUIDisMissing(transaction, i)) {
                 this.width--;
             }
         }
     }
 
     public CountDeltaAdd(transaction: ITransaction): number {
+        if (this.numTransactions === 0) {
+            return this.mathCache.Grad(transaction.size, 1, transaction.size);
+        }
         const sNew = this.square + transaction.size;
         let wNew = this.width;
         for (let i = 0; i < transaction.size; i++) {
-            if (this.IsElementDeterminative(transaction, i, 0)) {
+            if (this.IsUIDisMissing(transaction, i)) {
                 wNew++;
             }
-        }
-        if (this.numTransactions === 0) {
-            return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew);
         }
         return this.mathCache.Grad(sNew, this.numTransactions + 1, wNew)
                - this.mathCache.Grad(this.square, this.numTransactions, this.width);
     }
 
-    private IsElementDeterminative(transaction: ITransaction, index: number, threshold: number): boolean {
+    private IsUIDisMissing(transaction: ITransaction, index: number): boolean {
         const elementKey = transaction.GetElementUID(index);
-        return (this.occ[elementKey] === threshold);
+        return (this.occ[elementKey] === 0);
     }
 }
