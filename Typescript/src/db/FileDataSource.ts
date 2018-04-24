@@ -20,11 +20,12 @@ export default class FileDataSource implements IDataSource<string> {
             });
 
             lineReader.on("line", callback);
+            // throw new Error("test error");
 
             // tslint:disable-next-line:no-shadowed-variable
             return new Promise<void>((resolve) => lineReader.on("close", resolve));
         } catch (error) {
-            return Promise.reject(error);
+            return Promise.reject("File input: " + error);
         }
     }
 }

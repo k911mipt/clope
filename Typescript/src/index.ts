@@ -32,4 +32,4 @@ async function main(repulsion: number) {
     await display.Out();
 }
 
-main(2.7);
+main(2.7).catch((e) => console.error(e));
