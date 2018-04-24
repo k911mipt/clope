@@ -1,7 +1,7 @@
 import Clope from "./clope/Clope";
 import RuleSet from "./clope/RuleSet";
 import TransactionStore from "./clope/TransactionStore";
-import { Display } from "./common/Display";
+import Display from "./common/Display";
 import FileDataSource from "./db/FileDataSource";
 
 async function main(repulsion: number) {

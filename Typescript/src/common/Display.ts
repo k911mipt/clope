@@ -2,10 +2,10 @@ import { isNullOrUndefined } from "util";
 import Cluster from "../clope/Cluster";
 import { ITransactionStore, Transaction, TransactionElement, UID } from "./Typings";
 
-export class Display {
+export default class Display {
     private dataSource: ITransactionStore;
     private tableClusters: number[];
-    private classesIDs: Array<[TransactionElement, number]>;
+    private classesIDs: Array<[TransactionElement, UID]>;
     private clusterOccurences: Array<Map<UID, number>>;
     private columnNumber: number;
 

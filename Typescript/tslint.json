@@ -1,9 +1,10 @@
 {
     "defaultSeverity": "error",
     "extends": [
-//        "tslint:recommended",
-        "tslint-clean-code",
-        "tslint:latest"
+        "tslint:recommended",
+        //"tslint-clean-code",
+        "tslint:latest",
+        "tslint-clean-code"
     ],
     "jsRules": {},
     "rules": {

@@ -13,5 +13,5 @@ export interface IDataSource<T> {
 export interface ITransactionStore extends IDataSource<Transaction> {
     size: number;
     InitStore(): void;
-    GetClassesIDs(columnNumber: number): Array<[any, number]>;
+    GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
 }
