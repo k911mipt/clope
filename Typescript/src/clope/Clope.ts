@@ -23,7 +23,7 @@ export default class Clope<T> {
         return this.tableClusters;
     }
 
-    private async Initialize() {
+    private async Initialize(): Promise<void> {
         let iMaxProfitCluster = 0;
 
         // While not EOF, read&process
@@ -41,7 +41,7 @@ export default class Clope<T> {
         }
     }
 
-    private async Iterate() {
+    private async Iterate(): Promise<void> {
         let isClusterMoved = true;
         while (isClusterMoved) {
             let rowIndex = 0;
@@ -50,7 +50,7 @@ export default class Clope<T> {
             await this.dataSource.ReadAll((transaction: Transaction) => {
 
                 // Получается дешевле удалять транзакцию из кластера и считать cluster.DeltaAdd,
-                // а потом добавлять обратно в тот же кластер,
+                // а потом добавлять обратно в тот же кластер (процентов на 10, судя по тестовому набору данных),
                 // чем делать проверки в цикле FindMaxProfitCluster и отдельно считать cluster.DeltaDel
                 // К тому же так мы избавляемся от функции cluster.DeltaDel вообще за ненадобностью
 
@@ -88,9 +88,10 @@ export default class Clope<T> {
 
         for (let i = 0; i < this.clusters.length; i++) {
             const profit = this.clusters[i].CountDeltaAdd(transaction);
-            if (profit <= maxProfit) { continue; }
-            iMaxProfitCluster = i;
-            maxProfit = profit;
+            if (profit > maxProfit) {
+                iMaxProfitCluster = i;
+                maxProfit = profit;
+            }
         }
         return iMaxProfitCluster;
     }

@@ -20,20 +20,15 @@ export default class TransactionStore<T> implements ITransactionStore  {
         return this.elementMapsSize;
     }
 
-    public async InitStore(): Promise<void> {
-        try {
+    public InitStore(): Promise<void> {
             // While not EOF, read & process
-            return await this.dataSource.ReadAll((row: T) => {
+            return this.dataSource.ReadAll((row: T) => {
                 const elements = this.ruleSet.Apply(row);
                 for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
                     const element = elements[columnNumber];
                     this.AddElementToMaps(columnNumber, element);
                 }
             });
-        } catch (error) {
-            return Promise.reject("Transaction store initialization: " + error);
-            // console.log("Transaction store initialization, ", e);
-        }
     }
 
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {

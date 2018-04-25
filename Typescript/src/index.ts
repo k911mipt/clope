@@ -5,7 +5,7 @@ import Display from "./common/Display";
 import FileDataSource from "./db/FileDataSource";
 
 async function main(repulsion: number) {
-    const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data");
+    const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data23");
     const ruleSet = new RuleSet<string>({
         ConvertFunc: (row: string) => row.split(","),
         columnsToSkip: [0],
@@ -32,4 +32,4 @@ async function main(repulsion: number) {
     await display.Out();
 }
 
-main(2.7).catch((e) => console.error(e));
+main(2.7).catch((e) => console.error(e + " Catched"));

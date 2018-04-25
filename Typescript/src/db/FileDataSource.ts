@@ -14,18 +14,12 @@ export default class FileDataSource implements IDataSource<string> {
     }
 
     public ReadAll(callback: (row: string) => void): Promise<void> {
-        try {
-            const lineReader = ReadLine.createInterface({
-                input: fs.createReadStream(this.filePath),
-            });
+        const lineReader = ReadLine.createInterface({
+            input: fs.createReadStream(this.filePath),
+        });
 
-            lineReader.on("line", callback);
-            // throw new Error("test error");
-
-            // tslint:disable-next-line:no-shadowed-variable
-            return new Promise<void>((resolve) => lineReader.on("close", resolve));
-        } catch (error) {
-            return Promise.reject("File input: " + error);
-        }
+        lineReader.on("line", callback);
+        // tslint:disable-next-line:no-shadowed-variable
+        return new Promise<void>((resolve) => lineReader.on("close", resolve));
     }
 }

@@ -25,10 +25,6 @@ export default class RuleSet<T> {
         this.ConvertFunc = config.ConvertFunc;
     }
 
-    public Apply(row: T): TransactionElement[] {
-        return this.ConvertFunc(row);
-    }
-
     public ApplyWithRules(row: T): TransactionElement[] {
         const filteredElements = this.Apply(row);
         for (let columnNumber = 0; columnNumber < filteredElements.length; columnNumber++) {
@@ -38,6 +34,10 @@ export default class RuleSet<T> {
             }
         }
         return filteredElements;
+    }
+
+    public Apply(row: T): TransactionElement[] {
+        return this.ConvertFunc(row);
     }
 
     private CreateSet<TArray>(array?: TArray[]) {
