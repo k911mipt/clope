@@ -21,7 +21,7 @@ namespace Clope
         {
             Initialize();       //Фаза 1
 
-            DisplayClusters();  //Вывод на экран результат работы после инициализации
+            //DisplayClusters();  //Вывод на экран результат работы после инициализации
 
             Iterate();          //Фаза 2
 
@@ -33,11 +33,10 @@ namespace Clope
         {
             //// Фаза 1 – инициализация
             var iMaxProfitCluster = 0;
-            Transaction transaction;
             _clusterList = new List<Cluster>();
             TableClusters = new List<int>();
 
-            while (_db.TryReadNextTransaction(out transaction)) //прочитать из таблицы следующую транзакцию[t, -];
+            while (_db.TryReadNextTransaction(out var transaction)) //прочитать из таблицы следующую транзакцию[t, -];
             {
                 if (iMaxProfitCluster >= _clusterList.Count - 1)
                     _clusterList.Add(new Cluster(_db.GetObjectsCount(), ref mathSupport));  //Если последний кластер уже не пуст, добавим пустой кластер
@@ -57,7 +56,6 @@ namespace Clope
             //// Фаза 2 – Итерация
             //int j;
             bool moved;
-            Transaction transaction;
             //Повторять
             do
             {
@@ -69,7 +67,7 @@ namespace Clope
                 var j = 0;
 
 
-                while (_db.TryReadNextTransaction(out transaction))  //читать[t, i];
+                while (_db.TryReadNextTransaction(out var transaction))  //читать[t, i];
                 {
                     var iCurrentCluster = TableClusters[j];
 

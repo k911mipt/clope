@@ -5,7 +5,7 @@ import Display from "./common/Display";
 import FileDataSource from "./db/FileDataSource";
 
 async function main(repulsion: number) {
-    const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data23");
+    const fileSource = new FileDataSource("../Mushroom_DataSet/agaricus-lepiota.data");
     const ruleSet = new RuleSet<string>({
         ConvertFunc: (row: string) => row.split(","),
         columnsToSkip: [0],

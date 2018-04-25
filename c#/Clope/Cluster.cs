@@ -77,16 +77,14 @@ namespace Clope
         /// <returns>изменение профита</returns>
         public double DeltaAdd(Transaction transaction)
         {
+            if (NumberTransactions == 0)
+                return Grad(transaction.ElementKeyCount, NumberTransactions + 1, transaction.ElementKeyCount);
             var S_new = _square + transaction.ElementKeyCount;
             var W_new = _width;
             for (var i = 0; i < transaction.ElementKeyCount; i++)
-                //if (_occ.TryGetValue(transaction[i], out var _))
                 if (_occ[transaction[i]] == 0)
                     W_new++;
-            if (NumberTransactions > 0)
-                return Grad(S_new, NumberTransactions + 1, W_new) - Grad(_square, NumberTransactions, _width);
-            return Grad(S_new, NumberTransactions + 1, W_new);
-
+            return Grad(S_new, NumberTransactions + 1, W_new) - Grad(_square, NumberTransactions, _width);
         }
 
 
@@ -98,19 +96,20 @@ namespace Clope
         /// <returns>изменение профита</returns>
         public double DeltaDel(Transaction transaction)
         {
-            int S_new = _square - transaction.ElementKeyCount;
-            int W_new = _width;
-            for (int i = 0; i < transaction.ElementKeyCount; i++)
+            if (NumberTransactions == 1)
+                return Grad(_square, NumberTransactions, _width);
+            var S_new = _square - transaction.ElementKeyCount;
+            var W_new = _width;
+            for (var i = 0; i < transaction.ElementKeyCount; i++)
                 if (_occ[transaction[i]] == 1)
                     W_new--;
 
             if (NumberTransactions < 1)
                 Console.WriteLine("Попытка удаления транзакции из пустого кластера, проверьте исходный код!");
 
-            if ((W_new != 0) & (NumberTransactions == 1))
-                return Grad(_square, NumberTransactions, _width) - Grad(S_new, NumberTransactions - 1, W_new);
+            return Grad(_square, NumberTransactions, _width) - Grad(S_new, NumberTransactions - 1, W_new);
 
-            return Grad(_square, NumberTransactions, _width);
+            
         }
 
         private double Grad(int S, int N, int W)
