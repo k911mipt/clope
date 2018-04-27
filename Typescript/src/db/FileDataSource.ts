@@ -1,5 +1,4 @@
 import fs from "fs";
-import { resolve } from "path";
 import ReadLine from "readline";
 import { IDataSource } from "../common/Typings";
 
@@ -19,7 +18,7 @@ export default class FileDataSource implements IDataSource<string> {
         });
 
         lineReader.on("line", callback);
-        // tslint:disable-next-line:no-shadowed-variable
+
         return new Promise<void>((resolve) => lineReader.on("close", resolve));
     }
 }

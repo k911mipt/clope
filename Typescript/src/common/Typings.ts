@@ -15,3 +15,17 @@ export interface ITransactionStore extends IDataSource<Transaction> {
     InitStore(): void;
     GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
 }
+
+export interface IDataSourceIterator<T> {
+    isEnded: boolean;
+    Connect(): void;
+    ReadNextRow(): Promise<T | null>;
+    Reset(): void;
+}
+
+export interface ITransactionStoreIterator extends IDataSourceIterator<Transaction> {
+    size: number;
+    InitStore(): void;
+    GetNextTransaction(): Promise<Transaction | null>;
+    GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
+}
