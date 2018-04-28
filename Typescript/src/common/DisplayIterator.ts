@@ -49,18 +49,7 @@ export default class Display {
 
     private async GroupBy(): Promise<void> {
         let rowNumber = 0;
-        let transaction: Transaction = [];
-        this.dataSource.Reset();
-        while (!this.dataSource.isEnded) {
-            await this.dataSource.GetNextTransaction()
-                .then((result) => {
-                    if (result) {
-                        transaction = result;
-                    } else {
-                        console.log("got null on display grouping");
-                        transaction = [];
-                    }
-                });
+        for await (const transaction of this.dataSource.iterator()) {
             const uid = transaction[this.columnNumber];
             const clusterNumber = this.tableClusters[rowNumber++];
             if (clusterNumber >= this.clusterOccurences.length) {

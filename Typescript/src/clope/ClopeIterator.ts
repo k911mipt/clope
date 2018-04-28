@@ -25,19 +25,7 @@ export default class ClopeIterator<T> {
 
     private async Initialize(): Promise<void> {
         let iMaxProfitCluster = 0;
-
-        this.dataSource.Reset();
-        let transaction: Transaction = [];
-        while (!this.dataSource.isEnded) {
-            await this.dataSource.GetNextTransaction()
-                .then((result) => {
-                    if (result) {
-                        transaction = result;
-                    } else {
-                        console.log("got null on clope init");
-                        transaction = [];
-                    }
-                });
+        for await (const transaction of this.dataSource.iterator()) {
             if (iMaxProfitCluster >= this.clusters.length - 1) {
                 this.clusters.push(new Cluster(this.dataSource.size, this.mathCache));
             }
@@ -56,19 +44,7 @@ export default class ClopeIterator<T> {
         while (isClusterMoved) {
             let rowIndex = 0;
             isClusterMoved = false;
-                // While not EOF, read&process
-            this.dataSource.Reset();
-            let transaction: Transaction = [];
-            while (!this.dataSource.isEnded) {
-                await this.dataSource.GetNextTransaction()
-                    .then((result) => {
-                        if (result) {
-                            transaction = result;
-                        } else {
-                            console.log("got null on clope iterate");
-                            transaction = [];
-                        }
-                    });
+            for await (const transaction of this.dataSource.iterator()) {
                 const iCurrentCluster = this.tableClusters[rowIndex];
                 this.clusters[iCurrentCluster].Delete(transaction);
 

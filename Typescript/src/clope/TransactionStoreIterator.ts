@@ -16,55 +16,45 @@ export default class TransactionStoreIterator<T> implements ITransactionStoreIte
 
         this.elementMaps = new Map<ColumnNumber, Map<TransactionElement, UID>>();
         this.elementMapsSize = 0;
+
     }
 
     get size(): number {
         return this.elementMapsSize;
     }
-
-    get isEnded(): boolean {
-        return this.dataSource.isEnded;
+    public iterator(): AsyncIterableIterator<Transaction> {
+        // tslint:disable-next-line:no-this-assignment
+        const parent = this;
+        async function* iterator(): AsyncIterableIterator<Transaction> {
+            for await (const row of parent.dataSource) {
+                const elements = parent.ruleSet.ApplyWithRules(row);
+                yield parent.CreateTransaction(elements);
+            }
+        }
+        return iterator();
     }
 
-    public Connect(): void {
-        throw new Error("Method not implemented.");
+    public [Symbol.asyncIterator](): AsyncIterableIterator<Transaction> {
+        // tslint:disable-next-line:no-this-assignment
+        const parent = this;
+        async function* iterator(): AsyncIterableIterator<Transaction> {
+            for await (const row of parent.dataSource) {
+                const elements = parent.ruleSet.ApplyWithRules(row);
+                yield parent.CreateTransaction(elements);
+            }
+        }
+        const a1 = iterator();
+        return a1;
     }
 
     public async InitStore(): Promise<void> {
-        // While not EOF, read & process
-        this.dataSource.Connect();
-        while (!this.dataSource.isEnded) {
-            const row = await this.dataSource.ReadNextRow();
-            // if (!row) { throw new Error("null row"); }
-            if (!row) {
-                console.log("got null on store init");
-                continue;
-            }
+        for await (const row of this.dataSource) {
             const elements = this.ruleSet.Apply(row);
             for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
                 const element = elements[columnNumber];
                 this.AddElementToMaps(columnNumber, element);
             }
         }
-    }
-
-    public async ReadNextRow(): Promise<Transaction | null> {
-        const row = await this.dataSource.ReadNextRow();
-        // if (!row) { throw new Error("null row"); }
-        if (!row) {
-            console.log("got null on transform transaction");
-            return null;
-        }
-        const elements = this.ruleSet.ApplyWithRules(row);
-        return this.CreateTransaction(elements);
-    }
-
-    public GetNextTransaction(): Promise<Transaction | null> {
-        return this.ReadNextRow();
-    }
-
-    public Reset(): void {
-        this.dataSource.Reset();
     }
 
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {

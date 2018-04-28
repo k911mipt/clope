@@ -68,44 +68,24 @@ async function mainIterator(repulsion: number, filePath: string) {
 
 async function temp() {
     const filePath = "../Mushroom_DataSet/tempFile.txt";
-    const t =  new FileDataSourceIterator(filePath);
-    t.Connect();
-    console.log ("Connect");
-    let row = await t.ReadNextRow();
-    let flag = true;
-    if (row == null) {
-        flag = false;
+    const repulsion = 2.7;
+    const fileSourceIterator = new FileDataSourceIterator(filePath);
+    const ruleSet = new RuleSet<string>({
+        ConvertFunc: (row: string) => row.split(","),
+        columnsToSkip: [0],
+        nullElements: ["?"],
+    });
+    const transactionStoreIterator = new TransactionStoreIterator<string>(fileSourceIterator, ruleSet);
+    const clopeIterator = new ClopeIterator<string>(transactionStoreIterator, repulsion);
+
+    console.time("init");
+    await transactionStoreIterator.InitStore();
+    console.timeEnd("init");
+
+    for await (const transaction of transactionStoreIterator.iterator()) {
+        console.log(transaction);
     }
-    while (flag) {
-        console.log(row);
-        row = await t.ReadNextRow();
 
-        if (row == null) {
-            flag = false;
-            console.log(" end ");
-        }
-    }
-
-    t.Reset();
-    console.log ("Reset");
-    // row = await t.ReadNextRow();
-    // while (row) {
-    //     console.log(row);
-    //     row = await t.ReadNextRow();
-    // }
-
-    let row2 = t.SyncReadNextRow();
-    for (let index = 0; index < 5; index++) {
-        console.log(row2);
-        row2 = t.SyncReadNextRow();
-    }
-    console.log (" end 2");
-
-    // for await (const value1 of t) {
-    //     console.log(value1 + "new");
-    // }
-
-    console.log("finished2");
 }
 // temp();
 // main(2.7, "../Mushroom_DataSet/agaricus-lepiota.data").catch((e) => console.error(e + " Catched"));

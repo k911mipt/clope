@@ -17,15 +17,13 @@ export interface ITransactionStore extends IDataSource<Transaction> {
 }
 
 export interface IDataSourceIterator<T> {
-    isEnded: boolean;
-    Connect(): void;
-    ReadNextRow(): Promise<T | null>;
-    Reset(): void;
+    [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
 
 export interface ITransactionStoreIterator extends IDataSourceIterator<Transaction> {
     size: number;
     InitStore(): void;
-    GetNextTransaction(): Promise<Transaction | null>;
+    iterator(): AsyncIterableIterator<Transaction>;
+    // GetNextTransaction(): Promise<Transaction | null>;
     GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
 }

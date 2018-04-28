@@ -1,7 +1,7 @@
 // Чуть модифицированный код, взятый с
 // https://github.com/rolftimmermans/event-iterator
 //
-import { EventEmitter } from "events";
+import { EventEmitter } from "stream";
 
 export type PushCallback<T> = (res: T) => void;
 export type StopCallback<T> = () => void;
@@ -29,9 +29,12 @@ export class EventIterator<T> {
         Object.freeze(this);
     }
 
-    public [Symbol.asyncIterator](): AsyncIterator<T> {
+    public [Symbol.asyncIterator](): AsyncIterableIterator<T> {
         let placeholder: AsyncResolver<T> | void;
         const queue: AsyncQueue<T> = [];
+        // const promiseQueue?: Promise<IteratorResult<T>> = null;
+        // TODO: ???ПЕРЕДЕЛАТЬ НА THEN PROMISE
+
         const listen = this.listen;
         const remove = this.remove;
 
@@ -80,7 +83,7 @@ export class EventIterator<T> {
                 queue.push(rejection);
             }
         };
-        console.log("Start listen INSIDE EVENT-ITERATOR");
+        // console.log("Start listen INSIDE EVENT-ITERATOR");
 
         listen(push, stop, fail);
 
@@ -102,13 +105,16 @@ export class EventIterator<T> {
                 // tslint:disable-next-line:no-object-literal-type-assertion
                 return Promise.resolve({ done: true } as IteratorResult<T>);
             },
+            [Symbol.asyncIterator]() {
+                return this;
+            },
         };
     }
 }
 
 // export default EventIterator;
 export function subscribeReadLine(emitter: EventEmitter, event: string) {
-    return new EventIterator<Event>(
+    return new EventIterator<string>(
         (push, stop) => {
             emitter.addListener(event, push);
             emitter.addListener("close", stop);
