@@ -23,7 +23,5 @@ export interface IDataSourceIterator<T> {
 export interface ITransactionStoreIterator extends IDataSourceIterator<Transaction> {
     size: number;
     InitStore(): void;
-    iterator(): AsyncIterableIterator<Transaction>;
-    // GetNextTransaction(): Promise<Transaction | null>;
     GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
 }

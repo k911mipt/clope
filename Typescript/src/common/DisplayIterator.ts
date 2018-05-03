@@ -49,7 +49,7 @@ export default class Display {
 
     private async GroupBy(): Promise<void> {
         let rowNumber = 0;
-        for await (const transaction of this.dataSource.iterator()) {
+        for await (const transaction of this.dataSource) {
             const uid = transaction[this.columnNumber];
             const clusterNumber = this.tableClusters[rowNumber++];
             if (clusterNumber >= this.clusterOccurences.length) {

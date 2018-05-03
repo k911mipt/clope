@@ -32,9 +32,6 @@ export class EventIterator<T> {
     public [Symbol.asyncIterator](): AsyncIterableIterator<T> {
         let placeholder: AsyncResolver<T> | void;
         const queue: AsyncQueue<T> = [];
-        // const promiseQueue?: Promise<IteratorResult<T>> = null;
-        // TODO: ???ПЕРЕДЕЛАТЬ НА THEN PROMISE
-
         const listen = this.listen;
         const remove = this.remove;
 

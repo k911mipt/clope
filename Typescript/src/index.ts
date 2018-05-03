@@ -48,13 +48,13 @@ async function mainIterator(repulsion: number, filePath: string) {
     const transactionStoreIterator = new TransactionStoreIterator<string>(fileSourceIterator, ruleSet);
     const clopeIterator = new ClopeIterator<string>(transactionStoreIterator, repulsion);
 
-    console.time("init");
+    console.time("init iterator");
     await transactionStoreIterator.InitStore();
-    console.timeEnd("init");
+    console.timeEnd("init iterator");
 
-    console.time("clope");
+    console.time("clope iterator");
     const tableClusters = await clopeIterator.Run();
-    console.timeEnd("clope");
+    console.timeEnd("clope iterator");
 
     // Display grouped clusters
     ruleSet.Update({
@@ -78,11 +78,11 @@ async function temp() {
     const transactionStoreIterator = new TransactionStoreIterator<string>(fileSourceIterator, ruleSet);
     const clopeIterator = new ClopeIterator<string>(transactionStoreIterator, repulsion);
 
-    console.time("init");
+    console.time("inittemp");
     await transactionStoreIterator.InitStore();
-    console.timeEnd("init");
+    console.timeEnd("inittemp");
 
-    for await (const transaction of transactionStoreIterator.iterator()) {
+    for await (const transaction of transactionStoreIterator) {
         console.log(transaction);
     }
 
