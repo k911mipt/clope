@@ -1,6 +1,6 @@
 import Clope from "./clope/Clope";
 import RuleSet from "./clope/RuleSet";
-import TransactionStoreIterator from "./clope/TransactionStore";
+import TransactionStore from "./clope/TransactionStore";
 import Display from "./common/Display";
 import FileDataSource from "./db/FileDataSource";
 
@@ -14,7 +14,7 @@ async function main(repulsion: number, filePath: string) {
         columnsToSkip: [0],
         nullElements: ["?"],
     });
-    const transactionStore = new TransactionStoreIterator<string>(fileSource, ruleSet);
+    const transactionStore = new TransactionStore<string>(fileSource, ruleSet);
     const clope = new Clope(transactionStore, repulsion);
 
     console.time("init iterator");

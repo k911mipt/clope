@@ -3,7 +3,7 @@ import { ColumnNumber, IDataSource,
 import RuleSet from "./RuleSet";
 (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
 
-export default class TransactionStoreIterator<T> implements ITransactionStore  {
+export default class TransactionStore<T> implements ITransactionStore  {
 
     private readonly ruleSet: RuleSet<T>;
     private readonly dataSource: IDataSource<T>;
