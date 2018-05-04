@@ -1,14 +1,17 @@
-import { ColumnNumber, IDataSource, ITransactionStore, Transaction, TransactionElement, UID } from "../common/Typings";
+import { ColumnNumber, IDataSourceIterator,
+    ITransactionStore, Transaction, TransactionElement, UID } from "../common/Typings";
 import RuleSet from "./RuleSet";
+(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
 
-export default class TransactionStore<T> implements ITransactionStore  {
+export default class TransactionStoreIterator<T> implements ITransactionStore  {
+
     private readonly ruleSet: RuleSet<T>;
-    private readonly dataSource: IDataSource<T>;
+    private readonly dataSource: IDataSourceIterator<T>;
 
     private readonly elementMaps: Map<ColumnNumber, Map<TransactionElement, UID>>;
     private elementMapsSize: number;
 
-    constructor(dataSource: IDataSource<T>, ruleSet: RuleSet<T>) {
+    constructor(dataSource: IDataSourceIterator<T>, ruleSet: RuleSet<T>) {
         this.ruleSet = ruleSet;
         this.dataSource = dataSource;
 
@@ -20,15 +23,26 @@ export default class TransactionStore<T> implements ITransactionStore  {
         return this.elementMapsSize;
     }
 
-    public InitStore(): Promise<void> {
-            // While not EOF, read & process
-            return this.dataSource.ReadAll((row: T) => {
-                const elements = this.ruleSet.Apply(row);
-                for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
-                    const element = elements[columnNumber];
-                    this.AddElementToMaps(columnNumber, element);
-                }
-            });
+    public [Symbol.asyncIterator](): AsyncIterableIterator<Transaction> {
+        // tslint:disable-next-line:no-this-assignment
+        const parent = this;
+        async function* iterator(): AsyncIterableIterator<Transaction> {
+            for await (const row of parent.dataSource) {
+                const elements = parent.ruleSet.ApplyWithRules(row);
+                yield parent.CreateTransaction(elements);
+            }
+        }
+        return iterator();
+    }
+
+    public async InitStore(): Promise<void> {
+        for await (const row of this.dataSource[Symbol.asyncIterator]()) {
+            const elements = this.ruleSet.Apply(row);
+            for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
+                const element = elements[columnNumber];
+                this.AddElementToMaps(columnNumber, element);
+            }
+        }
     }
 
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {
@@ -40,13 +54,6 @@ export default class TransactionStore<T> implements ITransactionStore  {
             });
         }
         return classesIDs;
-    }
-
-    public ReadAll(callback: (row: Transaction) => void): Promise<void> {
-        return this.dataSource.ReadAll((row) => {
-                const elements = this.ruleSet.ApplyWithRules(row);
-                callback(this.CreateTransaction(elements));
-        });
     }
 
     private AddElementToMaps(columnNumber: ColumnNumber, element: TransactionElement) {

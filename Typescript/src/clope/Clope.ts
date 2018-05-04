@@ -2,7 +2,7 @@ import { ITransactionStore, Transaction } from "../common/Typings";
 import Cluster from "./Cluster";
 import MathCache from "./MathCache";
 
-export default class Clope<T> {
+export default class Clope {
     private readonly dataSource: ITransactionStore;
     private readonly mathCache: MathCache;
     private clusters: Cluster[];
@@ -25,16 +25,14 @@ export default class Clope<T> {
 
     private async Initialize(): Promise<void> {
         let iMaxProfitCluster = 0;
-
-        // While not EOF, read&process
-        await this.dataSource.ReadAll((transaction: Transaction) => {
-                if (iMaxProfitCluster >= this.clusters.length - 1) {
-                    this.clusters.push(new Cluster(this.dataSource.size, this.mathCache));
-                }
-                iMaxProfitCluster = this.FindMaxProfitCluster(transaction);
-                this.clusters[iMaxProfitCluster].Add(transaction);
-                this.tableClusters.push(iMaxProfitCluster);
-        });
+        for await (const transaction of this.dataSource) {
+            if (iMaxProfitCluster >= this.clusters.length - 1) {
+                this.clusters.push(new Cluster(this.dataSource.size, this.mathCache));
+            }
+            iMaxProfitCluster = this.FindMaxProfitCluster(transaction);
+            this.clusters[iMaxProfitCluster].Add(transaction);
+            this.tableClusters.push(iMaxProfitCluster);
+        }
 
         if (this.clusters[this.clusters.length - 1].isEmpty) {
             this.clusters.pop();
@@ -46,14 +44,7 @@ export default class Clope<T> {
         while (isClusterMoved) {
             let rowIndex = 0;
             isClusterMoved = false;
-                // While not EOF, read&process
-            await this.dataSource.ReadAll((transaction: Transaction) => {
-
-                // Получается дешевле удалять транзакцию из кластера и считать cluster.DeltaAdd,
-                // а потом добавлять обратно в тот же кластер (процентов на 10, судя по тестовому набору данных),
-                // чем делать проверки в цикле FindMaxProfitCluster и отдельно считать cluster.DeltaDel
-                // К тому же так мы избавляемся от функции cluster.DeltaDel вообще за ненадобностью
-
+            for await (const transaction of this.dataSource) {
                 const iCurrentCluster = this.tableClusters[rowIndex];
                 this.clusters[iCurrentCluster].Delete(transaction);
 
@@ -65,7 +56,7 @@ export default class Clope<T> {
                     isClusterMoved = true;
                 }
                 rowIndex++;
-            });
+            }
         }
     }
 

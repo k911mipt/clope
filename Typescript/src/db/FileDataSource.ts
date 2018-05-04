@@ -1,24 +1,20 @@
 import fs from "fs";
 import ReadLine from "readline";
-import { IDataSource } from "../common/Typings";
+import { IDataSourceIterator } from "../common/Typings";
+import { subscribeReadLine } from "../event-iterator/event-iterator";
 
-export default class FileDataSource implements IDataSource<string> {
-
+export default class FileDataSourceIterator implements IDataSourceIterator<string> {
+    public isEnded: boolean;
     private readonly filePath: string;
-    private isClosed: boolean;
 
     constructor(filePath: string) {
         this.filePath = filePath;
-        this.isClosed = false;
+        this.isEnded = true;
     }
-
-    public ReadAll(callback: (row: string) => void): Promise<void> {
+    public [Symbol.asyncIterator](): AsyncIterableIterator<string> {
         const lineReader = ReadLine.createInterface({
             input: fs.createReadStream(this.filePath),
         });
-
-        lineReader.on("line", callback);
-
-        return new Promise<void>((resolve) => lineReader.on("close", resolve));
+        return subscribeReadLine(lineReader, "line")[Symbol.asyncIterator]();
     }
 }
