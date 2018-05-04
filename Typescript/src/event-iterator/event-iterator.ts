@@ -19,7 +19,7 @@ type AsyncResolver<T> = {
 
 type AsyncQueue<T> = Array<Promise<IteratorResult<T>>>;
 
-export class EventIterator<T> {
+export default class EventIterator<T> {
     private listen: ListenHandler<T>;
     private remove?: RemoveHandler<T>;
 
@@ -107,19 +107,4 @@ export class EventIterator<T> {
             },
         };
     }
-}
-
-// export default EventIterator;
-export function subscribeReadLine(emitter: EventEmitter, event: string) {
-    return new EventIterator<string>(
-        (push, stop) => {
-            emitter.addListener(event, push);
-            emitter.addListener("close", stop);
-        },
-
-        (push, stop) => {
-            emitter.removeListener(event, push);
-            emitter.removeListener("close", stop);
-        },
-    );
 }

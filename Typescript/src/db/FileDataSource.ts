@@ -1,9 +1,10 @@
 import fs from "fs";
 import ReadLine from "readline";
-import { IDataSourceIterator } from "../common/Typings";
-import { subscribeReadLine } from "../event-iterator/event-iterator";
+import { EventEmitter } from "stream";
+import { IDataSource } from "../common/Typings";
+import EventIterator from "../event-iterator/event-iterator";
 
-export default class FileDataSourceIterator implements IDataSourceIterator<string> {
+export default class FileDataSource implements IDataSource<string> {
     public isEnded: boolean;
     private readonly filePath: string;
 
@@ -17,4 +18,20 @@ export default class FileDataSourceIterator implements IDataSourceIterator<strin
         });
         return subscribeReadLine(lineReader, "line")[Symbol.asyncIterator]();
     }
+}
+
+// Чуть модифицированный код, взятый с
+// https://github.com/rolftimmermans/event-iterator
+function subscribeReadLine(emitter: EventEmitter, event: string) {
+    return new EventIterator<string>(
+        (push, stop) => {
+            emitter.addListener(event, push);
+            emitter.addListener("close", stop);
+        },
+
+        (push, stop) => {
+            emitter.removeListener(event, push);
+            emitter.removeListener("close", stop);
+        },
+    );
 }

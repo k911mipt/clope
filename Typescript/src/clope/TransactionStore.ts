@@ -1,4 +1,4 @@
-import { ColumnNumber, IDataSourceIterator,
+import { ColumnNumber, IDataSource,
     ITransactionStore, Transaction, TransactionElement, UID } from "../common/Typings";
 import RuleSet from "./RuleSet";
 (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
@@ -6,12 +6,12 @@ import RuleSet from "./RuleSet";
 export default class TransactionStoreIterator<T> implements ITransactionStore  {
 
     private readonly ruleSet: RuleSet<T>;
-    private readonly dataSource: IDataSourceIterator<T>;
+    private readonly dataSource: IDataSource<T>;
 
     private readonly elementMaps: Map<ColumnNumber, Map<TransactionElement, UID>>;
     private elementMapsSize: number;
 
-    constructor(dataSource: IDataSourceIterator<T>, ruleSet: RuleSet<T>) {
+    constructor(dataSource: IDataSource<T>, ruleSet: RuleSet<T>) {
         this.ruleSet = ruleSet;
         this.dataSource = dataSource;
 

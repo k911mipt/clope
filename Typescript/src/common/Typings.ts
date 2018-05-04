@@ -6,11 +6,11 @@ export type ColumnNumber = number;
 
 export type Transaction = UID[];
 
-export interface IDataSourceIterator<T> {
+export interface IDataSource<T> {
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
 
-export interface ITransactionStore extends IDataSourceIterator<Transaction> {
+export interface ITransactionStore extends IDataSource<Transaction> {
     size: number;
     InitStore(): void;
     GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]>;
