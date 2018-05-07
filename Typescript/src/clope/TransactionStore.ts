@@ -22,7 +22,6 @@ export default class TransactionStore<T> implements ITransactionStore  {
     }
 
     public [Symbol.asyncIterator](): AsyncIterableIterator<Transaction> {
-        // tslint:disable-next-line:no-this-assignment
         const parent = this;
         async function* iterator(): AsyncIterableIterator<Transaction> {
             for await (const row of parent.dataSource) {

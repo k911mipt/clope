@@ -1,13 +1,16 @@
 {
   "name": "clope-ts",
   "version": "1.0.0",
-  "description": "Clope algorithm implementation with Mushroom dataset example",
+  "description": "Clope algorithm implementation with Mushroom dataset example. Written for Node.js",
   "main": "index.js",
   "scripts": {},
   "author": "k911mipt",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^10.0.4"
+    "@types/node": "^10.0.4",
+    "tslint": "^5.10.0",
+    "tslint-clean-code": "^0.2.7",
+    "typescript": "^2.8.3"
   }
 }

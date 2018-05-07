@@ -2,14 +2,16 @@
     "defaultSeverity": "error",
     "extends": [
         "tslint:recommended",
-        //"tslint-clean-code",
         "tslint:latest",
         "tslint-clean-code"
     ],
     "jsRules": {},
     "rules": {
         "no-console": [false, "log", "error"],
-        "no-bitwise": false
+        "no-bitwise": false,
+        "no-object-literal-type-assertion": false,
+        "no-empty": false,
+        "no-this-assignment": false
     },
     "rulesDirectory": []
 }

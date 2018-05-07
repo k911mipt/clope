@@ -5,7 +5,7 @@ export default class Cluster {
     private numTransactions: number;
     private width: number;
     private square: number;
-    private occ: { [uid: number]: number; };     // Таблица количества объектов по номерам в кластере
+    private occ: { [uid: number]: number; };
     private mathCache: MathCache;
 
     constructor(capacity: number, mathCache: MathCache) {

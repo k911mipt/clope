@@ -48,7 +48,6 @@ export default class EventIterator<T> {
                 remove(push, stop, fail);
             }
 
-            // tslint:disable-next-line:no-object-literal-type-assertion
             const resolution = { done: true } as IteratorResult<T>;
             if (placeholder) {
                 placeholder.resolve(resolution);
@@ -69,8 +68,7 @@ export default class EventIterator<T> {
             } else {
                 const rejection = Promise.reject(error);
                 /* Attach error handler to avoid leaking an unhandled promise rejection. */
-                // tslint:disable-next-line:no-empty
-                rejection.catch(() => { });
+                rejection.catch(() => {});
                 queue.push(rejection);
             }
         };
@@ -92,7 +90,6 @@ export default class EventIterator<T> {
                 if (remove) {
                     remove(push, stop, fail);
                 }
-                // tslint:disable-next-line:no-object-literal-type-assertion
                 return Promise.resolve({ done: true } as IteratorResult<T>);
             },
             [Symbol.asyncIterator]() {
