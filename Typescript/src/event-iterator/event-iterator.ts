@@ -1,4 +1,3 @@
-// import { Symbol.asyncIterator } from 'babel';
 // Чуть модифицированный код, взятый с
 // https://github.com/rolftimmermans/event-iterator
 
@@ -11,11 +10,10 @@ export type FailCallback<T> = (err: Error) => void;
 export type ListenHandler<T> = (push: PushCallback<T>, stop: StopCallback<T>, fail: FailCallback<T>) => void;
 export type RemoveHandler<T> = (push: PushCallback<T>, stop: StopCallback<T>, fail: FailCallback<T>) => void;
 
-// tslint:disable-next-line:interface-over-type-literal
-type AsyncResolver<T> = {
-    resolve: (res: IteratorResult<T>) => void
-    reject: (err: Error) => void,
-};
+interface IAsyncResolver<T> {
+    resolve: (res: IteratorResult<T>) => void;
+    reject: (err: Error) => void;
+}
 
 type AsyncQueue<T> = Array<Promise<IteratorResult<T>>>;
 
@@ -30,7 +28,7 @@ export default class EventIterator<T> {
     }
 
     public [Symbol.asyncIterator](): AsyncIterableIterator<T> {
-        let placeholder: AsyncResolver<T> | void;
+        let placeholder: IAsyncResolver<T> | void;
         const queue: AsyncQueue<T> = [];
         const listen = this.listen;
         const remove = this.remove;
@@ -42,9 +40,6 @@ export default class EventIterator<T> {
                 placeholder = undefined;
             } else {
                 queue.push(Promise.resolve(resolution));
-                // if (queue.length > 100 && console) {
-                //     console.warn("EventIterator queue filling up");
-                // }
             }
         };
 
@@ -73,14 +68,12 @@ export default class EventIterator<T> {
                 placeholder = undefined;
             } else {
                 const rejection = Promise.reject(error);
-
                 /* Attach error handler to avoid leaking an unhandled promise rejection. */
                 // tslint:disable-next-line:no-empty
                 rejection.catch(() => { });
                 queue.push(rejection);
             }
         };
-        // console.log("Start listen INSIDE EVENT-ITERATOR");
 
         listen(push, stop, fail);
 
@@ -94,7 +87,6 @@ export default class EventIterator<T> {
                     });
                 }
             },
-
 
             return() {
                 if (remove) {

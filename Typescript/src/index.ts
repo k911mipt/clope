@@ -1,12 +1,12 @@
+// Must have global polyfill to use async generators
+// due to https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-3.html
 (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
+
 import Clope from "./clope/Clope";
 import RuleSet from "./clope/RuleSet";
 import TransactionStore from "./clope/TransactionStore";
 import Display from "./common/Display";
 import FileDataSource from "./db/FileDataSource";
-
-// import fs from "fs";
-// import ReadLine from "readline";
 
 async function main(repulsion: number, filePath: string) {
     const fileSource = new FileDataSource(filePath);
@@ -27,7 +27,7 @@ async function main(repulsion: number, filePath: string) {
     console.timeEnd("clope iterator");
 
     // Display grouped clusters
-    ruleSet.Update({
+    ruleSet.Update({ 
         ConvertFunc: (row: string) => row.split(","),
         columnsToSkip: [],
         nullElements: ["?"],
