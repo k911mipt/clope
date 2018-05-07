@@ -20,9 +20,13 @@ export default class FileDataSource implements IDataSource<string> {
     }
 }
 
-// Чуть модифицированный код, взятый с
-// https://github.com/rolftimmermans/event-iterator
-// Подписка на события чтения строк из файла, с помещением их в очередь Promise
+/**
+ * A bit modified code from
+ * https://github.com/rolftimmermans/event-iterator
+ * Subscribing to file line reading events, pushing
+ * them into Promise queue, making an async generator
+ * @param emitter linereader
+ */
 function subscribeReadLine(emitter: ReadLine.ReadLine) {
     return new EventIterator<string>(
         (push, stop, fail) => {

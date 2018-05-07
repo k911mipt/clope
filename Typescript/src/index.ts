@@ -27,7 +27,7 @@ async function main(repulsion: number, filePath: string) {
     console.timeEnd("clope iterator");
 
     // Display grouped clusters
-    ruleSet.Update({ 
+    ruleSet.Update({
         ConvertFunc: (row: string) => row.split(","),
         columnsToSkip: [],
         nullElements: ["?"],
@@ -36,4 +36,4 @@ async function main(repulsion: number, filePath: string) {
     await displayIterator.Out();
 }
 
-main(2.7, "../Mushroom_DataSet/agaricus-lepiota.data").catch((e) => console.error(e + " Catched"));
+main(2.7, "../Mushroom_DataSet/agaricus-lepiota.data").catch((e) => console.error("Error occured: " + e));

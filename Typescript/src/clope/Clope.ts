@@ -8,6 +8,11 @@ export default class Clope {
     private clusters: Cluster[];
     private readonly tableClusters: number[];
 
+    /**
+     *
+     * @param dataSource Transaction store, must be iterable
+     * @param repulsion that coefficient goes straight into MathCache class, needed to calculate profits
+     */
     constructor(dataSource: ITransactionStore, repulsion: number) {
         this.dataSource = dataSource;
         this.clusters = [];
@@ -15,6 +20,10 @@ export default class Clope {
         this.mathCache = new MathCache(repulsion);
     }
 
+    /**
+     * Consistently calling required steps and returning the result
+     * aka clope.main()
+     */
     public async Run(): Promise<number[]> {
         await this.Initialize();
         await this.Iterate();
@@ -23,6 +32,14 @@ export default class Clope {
         return this.tableClusters;
     }
 
+    /**
+     * Phase 1: Initialization
+     * We make 1 run over datasource, and put
+     * each new transaction to cluster, which gives us best profit.
+     * When last cluster is not empty, we create a new one, so we
+     * always comparing existing clusters with each other and epmty one.
+     * Its a fair competition :)
+     */
     private async Initialize(): Promise<void> {
         let iMaxProfitCluster = 0;
         for await (const transaction of this.dataSource) {
@@ -39,6 +56,14 @@ export default class Clope {
         }
     }
 
+    /**
+     * Phase 2: Iteration
+     * Here we try to find best profit by moving clusters, so
+     * we repeat datasource runs till we cant move something
+     * without decreasing profit
+     * During run we temporarily delete given transaction from its cluster
+     * and try to find best profit for it again.
+     */
     private async Iterate(): Promise<void> {
         let isClusterMoved = true;
         while (isClusterMoved) {
@@ -60,6 +85,9 @@ export default class Clope {
         }
     }
 
+    /**
+     * Once we're done with relocations, we delete all clusters that became empty
+     */
     private CleanClusters(): void {
         for (let i = this.clusters.length - 1 ; i >= 0; i--) {
             if (this.clusters[i].isEmpty) {
@@ -73,6 +101,13 @@ export default class Clope {
         }
     }
 
+    /**
+     * Here we run over all existing clusters and counting profit
+     * for every one of them. One with maximum profit - the winner.
+     * It gets given transaction afterwards
+     * Function returns number of winner cluster
+     * @param transaction An array of objects' UIDs
+     */
     private FindMaxProfitCluster(transaction: Transaction): number {
         let maxProfit = 0;
         let iMaxProfitCluster = 0;

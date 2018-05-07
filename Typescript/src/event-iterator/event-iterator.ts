@@ -1,4 +1,4 @@
-// Чуть модифицированный код, взятый с
+// A bit modified code from
 // https://github.com/rolftimmermans/event-iterator
 
 import { EventEmitter } from "stream";

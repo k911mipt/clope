@@ -9,6 +9,14 @@ export default class TransactionStore<T> implements ITransactionStore  {
     private readonly elementMaps: Map<ColumnNumber, Map<TransactionElement, UID>>;
     private elementMapsSize: number;
 
+    /**
+     * Store that creates map of datasource objects to their UIDs
+     * Converts datasource transactions with variant objects to cute integer arrays with UIDs
+     * Has a for-await-of cozy async iterator
+     * @param dataSource Any async iterable source with transactions
+     * @param ruleSet A compact ruleset with convert function from datasource row to an array of any
+     * also contains rules for missing columns and class columns
+     */
     constructor(dataSource: IDataSource<T>, ruleSet: RuleSet<T>) {
         this.ruleSet = ruleSet;
         this.dataSource = dataSource;
@@ -17,10 +25,16 @@ export default class TransactionStore<T> implements ITransactionStore  {
         this.elementMapsSize = 0;
     }
 
+    /**
+     * Returns size of internal map
+     */
     get size(): number {
         return this.elementMapsSize;
     }
 
+    /**
+     * Async iterator on given datasource with on-the-wing convertation
+     */
     public [Symbol.asyncIterator](): AsyncIterableIterator<Transaction> {
         const parent = this;
         async function* iterator(): AsyncIterableIterator<Transaction> {
@@ -32,6 +46,10 @@ export default class TransactionStore<T> implements ITransactionStore  {
         return iterator();
     }
 
+    /**
+     * Procedure that runs over whole data source and fills
+     * the object UID map
+     */
     public async InitStore(): Promise<void> {
         for await (const row of this.dataSource) {
             const elements = this.ruleSet.Apply(row);
@@ -42,6 +60,11 @@ export default class TransactionStore<T> implements ITransactionStore  {
         }
     }
 
+    /**
+     * Function, returning an array of classes and their UIDs,
+     * using only internal map source, can be called after initialization
+     * @param columnNumber number of column, containing classes
+     */
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {
         const classesIDs = new Array<[TransactionElement, UID]>();
         const map = this.elementMaps.get(columnNumber);

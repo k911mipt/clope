@@ -10,6 +10,11 @@ export interface IDataSource<T> {
     [Symbol.asyncIterator](): AsyncIterableIterator<T>;
 }
 
+/**
+ * Transaction store interface, used by clope algorithm
+ * Performs convertation of transactions from datasource to
+ * normalized form
+ */
 export interface ITransactionStore extends IDataSource<Transaction> {
     size: number;
     InitStore(): void;
