@@ -1,3 +1,4 @@
+(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
 import Clope from "./clope/Clope";
 import RuleSet from "./clope/RuleSet";
 import TransactionStore from "./clope/TransactionStore";

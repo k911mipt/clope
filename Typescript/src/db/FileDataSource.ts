@@ -24,14 +24,16 @@ export default class FileDataSource implements IDataSource<string> {
 // https://github.com/rolftimmermans/event-iterator
 function subscribeReadLine(emitter: EventEmitter, event: string) {
     return new EventIterator<string>(
-        (push, stop) => {
+        (push, stop, fail) => {
             emitter.addListener(event, push);
             emitter.addListener("close", stop);
+            emitter.addListener("error", fail);
         },
 
-        (push, stop) => {
+        (push, stop, fail) => {
             emitter.removeListener(event, push);
             emitter.removeListener("close", stop);
+            emitter.removeListener("error", fail);
         },
     );
 }

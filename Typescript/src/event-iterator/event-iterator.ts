@@ -1,6 +1,7 @@
+// import { Symbol.asyncIterator } from 'babel';
 // Чуть модифицированный код, взятый с
 // https://github.com/rolftimmermans/event-iterator
-//
+
 import { EventEmitter } from "stream";
 
 export type PushCallback<T> = (res: T) => void;
@@ -10,7 +11,6 @@ export type FailCallback<T> = (err: Error) => void;
 export type ListenHandler<T> = (push: PushCallback<T>, stop: StopCallback<T>, fail: FailCallback<T>) => void;
 export type RemoveHandler<T> = (push: PushCallback<T>, stop: StopCallback<T>, fail: FailCallback<T>) => void;
 
-(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
 // tslint:disable-next-line:interface-over-type-literal
 type AsyncResolver<T> = {
     resolve: (res: IteratorResult<T>) => void
@@ -94,6 +94,7 @@ export default class EventIterator<T> {
                     });
                 }
             },
+
 
             return() {
                 if (remove) {

@@ -1,8 +1,6 @@
 import { ColumnNumber, IDataSource,
     ITransactionStore, Transaction, TransactionElement, UID } from "../common/Typings";
 import RuleSet from "./RuleSet";
-(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
-
 export default class TransactionStore<T> implements ITransactionStore  {
 
     private readonly ruleSet: RuleSet<T>;
@@ -36,7 +34,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
     }
 
     public async InitStore(): Promise<void> {
-        for await (const row of this.dataSource[Symbol.asyncIterator]()) {
+        for await (const row of this.dataSource) {
             const elements = this.ruleSet.Apply(row);
             for (let columnNumber = 0; columnNumber < elements.length; columnNumber++) {
                 const element = elements[columnNumber];
