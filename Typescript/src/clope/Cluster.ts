@@ -8,11 +8,15 @@ export default class Cluster {
     private occ: { [uid: number]: number; };
     private mathCache: MathCache;
 
+    /**
+     * @param capacity size of transaction store map, number of unique ubjects in dataset
+     * @param mathCache simple and handy class, giving gradient function with caching
+     */
     constructor(capacity: number, mathCache: MathCache) {
         this.mathCache = mathCache;
         this.occ = [];
 
-        // Без предварительной инициализации алгоритм получается в 2 раза медленнее
+        // Without cluster pre-initializations algo would be 1.5 times slower
         for (let i = 0; i < capacity; i++) {
             this.occ[i] = 0;
         }
@@ -22,10 +26,17 @@ export default class Cluster {
         this.numTransactions = 0;
     }
 
+    /**
+     * Check if cluster is empty
+     */
     get isEmpty(): boolean {
         return (this.numTransactions === 0);
     }
 
+    /**
+     * Add transaction to cluster
+     * @param transaction bunch of object UIDs
+     */
     public Add(transaction: Transaction): void {
         this.square += transaction.length;
         this.numTransactions++;
@@ -38,6 +49,10 @@ export default class Cluster {
         }
     }
 
+    /**
+     * Delete transaction from cluster
+     * @param transaction bunch of object UIDs
+     */
     public Delete(transaction: Transaction): void {
         this.square -= transaction.length;
         this.numTransactions--;
@@ -50,6 +65,10 @@ export default class Cluster {
         }
     }
 
+    /**
+     * Count profit delta if we put given transaction in this cluster
+     * @param transaction bunch of object UIDs
+     */
     public CountDeltaAdd(transaction: Transaction): number {
         if (this.numTransactions === 0) {
             return this.mathCache.Grad(transaction.length, 1, transaction.length);

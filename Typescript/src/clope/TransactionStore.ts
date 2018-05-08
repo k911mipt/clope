@@ -62,7 +62,8 @@ export default class TransactionStore<T> implements ITransactionStore  {
 
     /**
      * Function, returning an array of classes and their UIDs,
-     * using only internal map source, can be called after initialization
+     * using only internal map source, worthwhile to be called
+     * only after initialization
      * @param columnNumber number of column, containing classes
      */
     public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {

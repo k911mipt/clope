@@ -68,6 +68,13 @@ export default class EventIterator<T> {
             } else {
                 const rejection = Promise.reject(error);
                 /* Attach error handler to avoid leaking an unhandled promise rejection. */
+                /**
+                 * Empty arrow function is to "handle" but skip error, no need to really handle
+                 * it here unless you want to make some "error" queue to have a deal with later
+                 *
+                 * For this algorithm its better to skip other IO errors and not continue
+                 * otherwise it could lead us to incorrect results
+                 */
                 rejection.catch(() => {});
                 queue.push(rejection);
             }

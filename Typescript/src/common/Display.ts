@@ -9,6 +9,11 @@ export default class Display {
     private clusterOccurences: Array<Map<UID, number>>;
     private columnNumber: number;
 
+    /**
+     * @param columnNumber number of column in data to take classes names
+     * @param dataSource Source of transactions
+     * @param tableClusters result of clope algorithm
+     */
     constructor(columnNumber: number, dataSource: ITransactionStore, tableClusters: number[]) {
         this.dataSource = dataSource;
         this.tableClusters = tableClusters;
@@ -18,6 +23,9 @@ export default class Display {
         this.clusterOccurences = new Array<Map<UID, number>>();
     }
 
+    /**
+     * Displaying grouped cluster table in console
+     */
     public async Out(): Promise<void> {
         await this.GroupBy();
 

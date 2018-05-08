@@ -11,6 +11,10 @@ export default class FileDataSource implements IDataSource<string> {
         this.filePath = filePath;
         this.isEnded = true;
     }
+
+    /**
+     * Async iterator over string lines in file
+     */
     public [Symbol.asyncIterator](): AsyncIterableIterator<string> {
         const lineReader = ReadLine.createInterface({
             input: fs.createReadStream(this.filePath),

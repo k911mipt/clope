@@ -6,6 +6,12 @@ export default class MathCache {
         this.precalculatedWPowR = [];
     }
 
+    /**
+     * Gradient function for profit counting
+     * @param S Square of cluster
+     * @param N Number of objects in cluster
+     * @param width width of cluster
+     */
     public Grad(S: number, N: number, width: number): number {
         return S * N / this.GetWPowR(width);
     }
