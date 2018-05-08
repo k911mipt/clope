@@ -6,6 +6,9 @@ export type ColumnNumber = number;
 
 export type Transaction = UID[];
 
+/**
+ * Raw data source with cozy async iterator over rows (T)
+ */
 export interface IDataSource<T> {
     /**
      * Async iterator over rows in data source

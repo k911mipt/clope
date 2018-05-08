@@ -7,6 +7,10 @@ export default class FileDataSource implements IDataSource<string> {
     public isEnded: boolean;
     private readonly filePath: string;
 
+    /**
+     * Raw data source with cozy async iterator over rows
+     * @param filePath string path to file with data
+     */
     constructor(filePath: string) {
         this.filePath = filePath;
         this.isEnded = true;
