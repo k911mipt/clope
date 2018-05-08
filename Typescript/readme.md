@@ -46,7 +46,7 @@ const ruleSet = new RuleSet<string>({
 	nullElements: ["?"],
 });
 ```
-## Using other sources
+## Thanks
 Big thanks to **rolftimmermans** for his [event-iterator](https://github.com/rolftimmermans/event-iterator)
 i took his code and bit modified it for own purpose. You can see it at *\src\event-iterator\event-iterator.ts*
 ## Licensed under MIT license
