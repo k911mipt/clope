@@ -1,9 +1,9 @@
 import { ColumnNumber, TransactionElement } from "../common/Typings";
 
 export default class RuleSet<T> {
-    private ConvertFunc: (row: T) => TransactionElement[];
-    private skipElements: Set<TransactionElement>;
-    private columnsToSkip: Set<ColumnNumber>;
+    protected ConvertFunc: (row: T) => TransactionElement[];
+    protected skipElements: Set<TransactionElement>;
+    protected columnsToSkip: Set<ColumnNumber>;
 
     /**
      * @param config update parametres: row convertation function, array of elements
