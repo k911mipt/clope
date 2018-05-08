@@ -1,4 +1,4 @@
-// Must have global polyfill to use async generators
+// Must have global polyfill to use async iterators
 // due to https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-3.html
 (Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.iterator || Symbol.for("Symbol.asyncIterator");
 
