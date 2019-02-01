@@ -8,6 +8,9 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "^10.5.2"
+    "@types/node": "^10.0.4",
+    "tslint": "^5.10.0",
+    "tslint-clean-code": "^0.2.7",
+    "typescript": "^2.8.3"
   }
 }

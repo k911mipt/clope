@@ -14,21 +14,6 @@
                 "kind": "build",
                 "isDefault": true
             }
-        },
-        {
-            "label": "TSLint",
-            "type": "shell",
-            // "tsconfig": "tsconfig.json",
-            // "option": "watch",
-            "command": "tslint -p tsconfig.json",
-            "problemMatcher": [
-                "$tslint5"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
         }
-
     ]
 }

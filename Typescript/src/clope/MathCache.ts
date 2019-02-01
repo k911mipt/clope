@@ -16,7 +16,7 @@ export default class MathCache {
         return S * N / this.GetWPowR(width);
     }
 
-    private GetWPowR(w: number): number {
+    private GetWPowR(w: number) {
         if (w >= this.precalculatedWPowR.length) { this.Prepare(w); }
         return this.precalculatedWPowR[w];
     }

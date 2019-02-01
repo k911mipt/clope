@@ -35,7 +35,7 @@ export default class FileDataSource implements IDataSource<string> {
  * them into Promise queue, making an async generator
  * @param emitter linereader
  */
-function subscribeReadLine(emitter: ReadLine.ReadLine): EventIterator<string> {
+function subscribeReadLine(emitter: ReadLine.ReadLine) {
     return new EventIterator<string>(
         (push, stop, fail) => {
             emitter.addListener("line", push);

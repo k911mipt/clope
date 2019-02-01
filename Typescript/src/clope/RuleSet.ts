@@ -57,7 +57,7 @@ export default class RuleSet<T> {
         return this.ConvertFunc(row);
     }
 
-    private CreateSet<TArray>(array?: TArray[]): Set<TArray> {
+    private CreateSet<TArray>(array?: TArray[]) {
         return array ? new Set(array) : new Set();
     }
 }

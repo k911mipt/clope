@@ -1,11 +1,12 @@
 import { isNullOrUndefined } from "util";
-import { ITransactionStore, TransactionElement, UID } from "./Typings";
+import Cluster from "../clope/Cluster";
+import { ITransactionStore, Transaction, TransactionElement, UID } from "./Typings";
 
 export default class Display {
     private dataSource: ITransactionStore;
     private tableClusters: number[];
-    private classesIDs: [TransactionElement, UID][];
-    private clusterOccurences: Map<UID, number>[];
+    private classesIDs: Array<[TransactionElement, UID]>;
+    private clusterOccurences: Array<Map<UID, number>>;
     private columnNumber: number;
 
     /**

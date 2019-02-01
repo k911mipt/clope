@@ -66,7 +66,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
      * only after initialization
      * @param columnNumber number of column, containing classes
      */
-    public GetClassesIDs(columnNumber: number): [TransactionElement, UID][] {
+    public GetClassesIDs(columnNumber: number): Array<[TransactionElement, UID]> {
         const classesIDs = new Array<[TransactionElement, UID]>();
         const map = this.elementMaps.get(columnNumber);
         if (map) {
@@ -77,7 +77,7 @@ export default class TransactionStore<T> implements ITransactionStore  {
         return classesIDs;
     }
 
-    private AddElementToMaps(columnNumber: ColumnNumber, element: TransactionElement): void {
+    private AddElementToMaps(columnNumber: ColumnNumber, element: TransactionElement) {
         let columnMap = this.elementMaps.get(columnNumber);
         if (!columnMap) {
             columnMap = new Map<TransactionElement, UID>();
